@@ -27,6 +27,7 @@ fn run_prompt() {
     println!("Welcome to the rlox interactive REPL");
     let mut string = String::new();
 
+    let mut scanner = Scanner::new();
     loop {
         print!("-> ");
         io::stdout().flush().unwrap();
@@ -42,6 +43,10 @@ fn run_prompt() {
         // token.tokenize();
 
         println!("{}", string);
+        scanner.tokenize(&string);
+        for token in &scanner.tokens {
+            println!("{}", token.token_kind);
+        }
         string.clear();
     }
 }
@@ -77,8 +82,7 @@ mod tests {
     fn tokenization() {
         let valid_lox = r"('s...d,2\\.*aslkdj');
         (';.,2,4,5.;
-         "
-        .to_string();
+         ";
 
         let mut scanner = Scanner::new();
         scanner.tokenize(valid_lox);

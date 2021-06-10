@@ -85,7 +85,7 @@ impl Scanner {
         con
     }
 
-    pub fn tokenize(&mut self, source: String) {
+    pub fn tokenize(&mut self, source: &str) {
         let Self { tokens } = self;
         // TODO: Make a match function, to match against chars, and return the
         // correct token kind.
@@ -96,21 +96,21 @@ impl Scanner {
         let mut chars = source.chars().into_iter();
         for literal in chars {
             let token = match literal {
-                '(' => Token::create_token(&source, literal, TokenKind::Left_paren, line),
-                ')' => Token::create_token(&source, literal, TokenKind::Right_paren, line),
-                ',' => Token::create_token(&source, literal, TokenKind::Comma, line),
-                '.' => Token::create_token(&source, literal, TokenKind::Dot, line),
-                '-' => Token::create_token(&source, literal, TokenKind::Minus, line),
-                '+' => Token::create_token(&source, literal, TokenKind::Plus, line),
-                ';' => Token::create_token(&source, literal, TokenKind::Semicolon, line),
-                '\\' => Token::create_token(&source, literal, TokenKind::Backslash, line),
-                '*' => Token::create_token(&source, literal, TokenKind::Star, line),
-                '\'' => Token::create_token(&source, literal, TokenKind::Single_quote, line),
-                '"' => Token::create_token(&source, literal, TokenKind::Double_quote, line),
-                '\n' => Token::create_token(&source, literal, TokenKind::Double_quote, line),
+                '(' => Token::create_token(source, literal, TokenKind::Left_paren, line),
+                ')' => Token::create_token(source, literal, TokenKind::Right_paren, line),
+                ',' => Token::create_token(source, literal, TokenKind::Comma, line),
+                '.' => Token::create_token(source, literal, TokenKind::Dot, line),
+                '-' => Token::create_token(source, literal, TokenKind::Minus, line),
+                '+' => Token::create_token(source, literal, TokenKind::Plus, line),
+                ';' => Token::create_token(source, literal, TokenKind::Semicolon, line),
+                '\\' => Token::create_token(source, literal, TokenKind::Backslash, line),
+                '*' => Token::create_token(source, literal, TokenKind::Star, line),
+                '\'' => Token::create_token(source, literal, TokenKind::Single_quote, line),
+                '"' => Token::create_token(source, literal, TokenKind::Double_quote, line),
+                '\n' => Token::create_token(source, literal, TokenKind::Double_quote, line),
 
                 // TODO: Replace _ with error output instead
-                _ => Token::create_token(&source, literal, TokenKind::Error(literal, line), line),
+                _ => Token::create_token(source, literal, TokenKind::Error(literal, line), line),
             };
 
             tokens.push(token);
