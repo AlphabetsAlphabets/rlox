@@ -2,46 +2,50 @@ use std::fmt;
 
 pub enum TokenKind {
     // Single-character tokens.
+    Single_quote,
+    Double_quote,
     Left_paren,
     Right_paren,
-    Left_brace,
-    Right_brace,
     Comma,
     Dot,
     Minus,
     Plus,
     Semicolon,
-    Slash,
+    Backslash,
     Star,
+    Newline,
 
-    // one or two character tokens.
-    Bang,
-    Bang_equal,
-    Equal,
-    Equal_equal,
-    Greater,
-    Greater_equal,
-    Less,
-    Less_equal,
-
-    // literals.
-    Identifier,
-    String,
-    Number,
-    Print,
-    Return,
+    Space,
 
     Eof,
+    Error(char, usize),
 }
 
 impl fmt::Display for TokenKind {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        // TODO: Complete the match statement with all of the possible enum variants.
+
         let token_kind = match self {
-            Self::Print => "print",
-            Self::Eof => "eof",
-            _ => "something else"
+            Self::Single_quote => "'".to_string(),
+            Self::Double_quote => "\"".to_string(),
+            Self::Left_paren => "(".to_string(),
+            Self::Right_paren => ")".to_string(),
+            Self::Comma => ",".to_string(),
+            Self::Dot => ".".to_string(),
+            Self::Minus => "-".to_string(),
+            Self::Plus => "+".to_string(),
+            Self::Semicolon => ";".to_string(),
+            Self::Backslash => "\\".to_string(),
+            Self::Star => "*".to_string(),
+
+            Self::Newline => "".to_string(),
+            Self::Space => "".to_string(),
+            Self::Eof => "eof".to_string(),
+            Self::Error(character, line) => {
+                format!("Unexpected character: {} at {}.", character, line)
+            }
         };
 
-        write!(f, "{}", token_kind)
+        write!(f, "{}", &token_kind)
     }
 }
