@@ -4,6 +4,7 @@ use super::TokenKind;
 
 /// literal is the string itself
 /// lexeme is a character in a string
+#[derive(Clone)]
 pub struct Token {
     pub has_error: bool,
     pub token_kind: TokenKind,
@@ -42,7 +43,7 @@ impl Token {
 
     /// Returns the token, lexeme and literal.
     pub fn to_string(self) -> String {
-        format!("{} + {} + {}", self.token_kind, self.lexeme, self.literal)
+        format!("{} + {} + {}", self.token_kind.display(), self.lexeme, self.literal)
     }
 
     // Error "handling" or "reporting"
@@ -77,9 +78,7 @@ impl Scanner {
     pub fn new() -> Self {
         Scanner { tokens: vec![] }
     }
-}
 
-impl Scanner {
     pub fn eol(source: String, current: usize) -> bool {
         let con = current >= source.len();
         con
@@ -87,14 +86,11 @@ impl Scanner {
 
     pub fn tokenize(&mut self, source: &str) {
         let Self { tokens } = self;
-        // TODO: Make a match function, to match against chars, and return the
-        // correct token kind.
-
-        // source is the string that is parsed in.
         let mut line = 0;
 
+        // >= '>' -> '='
         let mut chars = source.chars().into_iter();
-        for literal in chars {
+        for (count, literal) in chars.enumerate() {
             let token = match literal {
                 '(' => Token::create_token(source, literal, TokenKind::Left_paren, line),
                 ')' => Token::create_token(source, literal, TokenKind::Right_paren, line),
@@ -107,14 +103,37 @@ impl Scanner {
                 '*' => Token::create_token(source, literal, TokenKind::Star, line),
                 '\'' => Token::create_token(source, literal, TokenKind::Single_quote, line),
                 '"' => Token::create_token(source, literal, TokenKind::Double_quote, line),
-                '\n' => Token::create_token(source, literal, TokenKind::Double_quote, line),
+                '=' => Token::create_token(source, literal, TokenKind::Equal, line),
+                '\n' => {
+                    line += 1;
+                    Token::create_token(source, literal, TokenKind::Newline, line)
+                },
+                '>' => {
+                    let character = &source[count+1..count + 2];
+                    let token = if character == "=" {
+                        TokenKind::Greater_or_equal
+                    } else {
+                        TokenKind::Greater
+                    };
+                    Token::create_token(source, literal, token, line)
+                }
 
                 // TODO: Replace _ with error output instead
                 _ => Token::create_token(source, literal, TokenKind::Error(literal, line), line),
             };
 
             tokens.push(token);
-            line += 1;
+        }
+    }
+
+    pub fn print(&self) {
+        let tokens = &self.tokens;
+        for token in tokens {
+            let s = token.token_kind.display();
+
+            if !s.is_empty() {
+                println!("{}", s);
+            }
         }
     }
 }

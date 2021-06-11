@@ -25,29 +25,17 @@ fn run_file(path: &str) {
 
 fn run_prompt() {
     println!("Welcome to the rlox interactive REPL");
-    let mut string = String::new();
 
     let mut scanner = Scanner::new();
+    let mut string = String::new();
     loop {
         print!("-> ");
         io::stdout().flush().unwrap();
 
         io::stdin().read_line(&mut string).unwrap();
 
-        if string.trim() == "" {
-            std::process::exit(1);
-        }
-
-        // tokenizing (has error)
-        // let token = Token::from(string.trim());
-        // token.tokenize();
-
-        println!("{}", string);
         scanner.tokenize(&string);
-        for token in &scanner.tokens {
-            println!("{}", token.token_kind);
-        }
-        string.clear();
+        scanner.print();
     }
 }
 
@@ -86,9 +74,7 @@ mod tests {
 
         let mut scanner = Scanner::new();
         scanner.tokenize(valid_lox);
-        for token in scanner.tokens {
-            println!("{}", &token.token_kind);
-        }
+        &scanner.print();
 
         assert_eq!(true, true);
     }
