@@ -41,11 +41,6 @@ impl Token {
         }
     }
 
-    /// Returns the token, lexeme and literal.
-    pub fn to_string(self) -> String {
-        format!("{} + {} + {}", self.token_kind.display(), self.lexeme, self.literal)
-    }
-
     // Error "handling" or "reporting"
     fn error(mut self, line_number: usize, message: &str) {
         self.report(line_number, "", message);
@@ -88,40 +83,70 @@ impl Scanner {
         let Self { tokens } = self;
         let mut line = 0;
 
-        // >= '>' -> '='
         let mut chars = source.chars().into_iter();
         for (count, literal) in chars.enumerate() {
-            let token = match literal {
-                '(' => Token::create_token(source, literal, TokenKind::Left_paren, line),
-                ')' => Token::create_token(source, literal, TokenKind::Right_paren, line),
-                ',' => Token::create_token(source, literal, TokenKind::Comma, line),
-                '.' => Token::create_token(source, literal, TokenKind::Dot, line),
-                '-' => Token::create_token(source, literal, TokenKind::Minus, line),
-                '+' => Token::create_token(source, literal, TokenKind::Plus, line),
-                ';' => Token::create_token(source, literal, TokenKind::Semicolon, line),
-                '\\' => Token::create_token(source, literal, TokenKind::Backslash, line),
-                '*' => Token::create_token(source, literal, TokenKind::Star, line),
-                '\'' => Token::create_token(source, literal, TokenKind::Single_quote, line),
-                '"' => Token::create_token(source, literal, TokenKind::Double_quote, line),
-                '=' => Token::create_token(source, literal, TokenKind::Equal, line),
+            let kind = match literal {
+                '\'' => TokenKind::Single_quote,
+                '"' => TokenKind::Double_quote,
+
+                '(' => TokenKind::Left_paren,
+                ')' => TokenKind::Right_paren,
+
+                ',' => TokenKind::Comma,
+                '.' => TokenKind::Dot,
+
+                '-' => TokenKind::Minus,
+                '+' => TokenKind::Plus,
+                ';' => TokenKind::Semicolon,
+                '\\' =>  {
+                    let character = &source[count+1..count + 2];
+                    if character == "\\" {
+                        TokenKind::Comment
+                    } else {
+                        TokenKind::Backslash
+                    }
+                }
+
+                '*' => TokenKind::Star,
+                '=' => TokenKind::Equal,
                 '\n' => {
                     line += 1;
-                    Token::create_token(source, literal, TokenKind::Newline, line)
+                    TokenKind::Newline
                 },
+
                 '>' => {
                     let character = &source[count+1..count + 2];
-                    let token = if character == "=" {
+                    if character == "=" {
                         TokenKind::Greater_or_equal
                     } else {
                         TokenKind::Greater
-                    };
-                    Token::create_token(source, literal, token, line)
-                }
+                    }
+                },
+                '<' => {
+                    let character = &source[count+1..count + 2];
+                     if character == "=" {
+                        TokenKind::Less_than_or_equal
+                    } else {
+                        TokenKind::Less_than
+                    }
+                },
 
-                // TODO: Replace _ with error output instead
-                _ => Token::create_token(source, literal, TokenKind::Error(literal, line), line),
+                '!' => {
+                    let character = &source[count+1..count + 2];
+                     if character == "=" {
+                        TokenKind::Bang_equal
+                    } else {
+                        TokenKind::Bang
+                    }
+                },
+
+                '{' => TokenKind::Left_brace,
+                '}' => TokenKind::Left_brace,
+
+                _ => TokenKind::Error(literal, line),
             };
 
+            let token = Token::create_token(source, literal, kind, line);
             tokens.push(token);
         }
     }

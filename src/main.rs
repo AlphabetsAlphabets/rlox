@@ -1,5 +1,6 @@
 // reference: https://gitlab.com/OptimalStrategy/rlox/-/blob/dev/src/lib/frontend/scanner.rs
 use std::env;
+use std::fs;
 use std::io;
 use std::io::Write;
 use std::path::Path;
@@ -11,16 +12,14 @@ use scanner::Token;
 mod token_kind;
 use token_kind::TokenKind;
 
-fn run_file(path: &str) {
+pub fn run_file(path: &str) {
     let path = Path::new(&path);
-    println!("{:?}", path);
+    let content = fs::read_to_string(path)
+        .expect("The file does not exist.");
 
-    // load the file, then the contents of the file into tokenize()
-
-    // token.tokenize();
-    // if token.has_error {
-    //     std::process::exit(1);
-    // }
+    let mut scanner = Scanner::new();
+    scanner.tokenize(&content);
+    scanner.print();
 }
 
 fn run_prompt() {
@@ -57,14 +56,7 @@ fn main() {
 mod tests {
     use super::Scanner;
     use super::Token;
-
-    #[test]
-    fn to_string() {
-        let token = Token::default();
-        let string_rep = token.to_string();
-        println!("{}", &string_rep);
-        assert_eq!(string_rep, "eof + lexeme + literal");
-    }
+    use super::run_file;
 
     #[test]
     fn tokenization() {
@@ -77,5 +69,11 @@ mod tests {
         &scanner.print();
 
         assert_eq!(true, true);
+    }
+
+    #[test]
+    fn operators() {
+        let operators = "src/tests/operators.lox";
+        run_file(operators);
     }
 }
