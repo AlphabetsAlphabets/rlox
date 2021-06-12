@@ -67,11 +67,19 @@ impl Token {
 /// source: String
 pub struct Scanner {
     pub tokens: Vec<Token>,
+    source: String,
+    count: usize,
+    line: usize
 }
 
 impl Scanner {
     pub fn new() -> Self {
-        Scanner { tokens: vec![] }
+        Scanner { 
+            tokens: vec![],
+            source: "".to_string(),
+            count: 0,
+            line: 0,
+        }
     }
 
     pub fn eol(source: String, current: usize) -> bool {
@@ -79,75 +87,72 @@ impl Scanner {
         con
     }
 
-    pub fn tokenize(&mut self, source: &str) {
-        let Self { tokens } = self;
-        let mut line = 0;
+    fn scan_token(&mut self, literal: char) -> TokenKind {
+        let count = self.count;
+        let line = self.line;
+        let source = &self.source;
 
+        match literal {
+            '\'' => TokenKind::Single_quote,
+            '"' => TokenKind::Double_quote,
+
+            '(' => TokenKind::Left_paren,
+            ')' => TokenKind::Right_paren,
+
+            ',' => TokenKind::Comma,
+            '.' => TokenKind::Dot,
+
+            '-' => TokenKind::Minus,
+            '+' => TokenKind::Plus,
+            ';' => TokenKind::Semicolon,
+            '\\' => self.lookahead(),
+            '*' => TokenKind::Star,
+            '=' => TokenKind::Equal,
+            '\n' => {
+                self.line += 1;
+                TokenKind::Newline
+            },
+
+            '>' => {
+                let character = &source[count+1..count + 2];
+                if character == "=" {
+                    TokenKind::Greater_or_equal
+                } else {
+                    TokenKind::Greater
+                }
+            },
+            '<' => {
+                let character = &source[count+1..count + 2];
+                 if character == "=" {
+                    TokenKind::Less_than_or_equal
+                } else {
+                    TokenKind::Less_than
+                }
+            },
+
+            '!' => {
+                let character = &source[count+1..count + 2];
+                 if character == "=" {
+                    TokenKind::Bang_equal
+                } else {
+                    TokenKind::Bang
+                }
+            },
+
+            '{' => TokenKind::Left_brace,
+            '}' => TokenKind::Left_brace,
+
+            _ => TokenKind::Error(literal, self.line),
+        }
+    }
+
+    pub fn tokenize(&mut self, source: &str) {
         let mut chars = source.chars().into_iter();
         for (count, literal) in chars.enumerate() {
-            let kind = match literal {
-                '\'' => TokenKind::Single_quote,
-                '"' => TokenKind::Double_quote,
+            let kind = self.scan_token(literal);
 
-                '(' => TokenKind::Left_paren,
-                ')' => TokenKind::Right_paren,
-
-                ',' => TokenKind::Comma,
-                '.' => TokenKind::Dot,
-
-                '-' => TokenKind::Minus,
-                '+' => TokenKind::Plus,
-                ';' => TokenKind::Semicolon,
-                '\\' =>  {
-                    let character = &source[count+1..count + 2];
-                    if character == "\\" {
-                        TokenKind::Comment
-                    } else {
-                        TokenKind::Backslash
-                    }
-                }
-
-                '*' => TokenKind::Star,
-                '=' => TokenKind::Equal,
-                '\n' => {
-                    line += 1;
-                    TokenKind::Newline
-                },
-
-                '>' => {
-                    let character = &source[count+1..count + 2];
-                    if character == "=" {
-                        TokenKind::Greater_or_equal
-                    } else {
-                        TokenKind::Greater
-                    }
-                },
-                '<' => {
-                    let character = &source[count+1..count + 2];
-                     if character == "=" {
-                        TokenKind::Less_than_or_equal
-                    } else {
-                        TokenKind::Less_than
-                    }
-                },
-
-                '!' => {
-                    let character = &source[count+1..count + 2];
-                     if character == "=" {
-                        TokenKind::Bang_equal
-                    } else {
-                        TokenKind::Bang
-                    }
-                },
-
-                '{' => TokenKind::Left_brace,
-                '}' => TokenKind::Left_brace,
-
-                _ => TokenKind::Error(literal, line),
-            };
-
-            let token = Token::create_token(source, literal, kind, line);
-            tokens.push(token);
+            let token = Token::create_token(source, literal, kind, self.line);
+            self.tokens.push(token);
         }
     }
 
