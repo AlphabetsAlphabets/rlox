@@ -65,16 +65,16 @@ impl Token {
 /// source: String
 pub struct Scanner {
     pub tokens: Vec<Token>,
-    source: String,
+    pub source: String,
     count: usize,
     line: usize
 }
 
 impl Scanner {
-    pub fn new() -> Self {
+    pub fn new(source: String) -> Self {
         Scanner { 
             tokens: vec![],
-            source: "".to_string(),
+            source,
             count: 0,
             line: 0,
         }
@@ -133,12 +133,13 @@ impl Scanner {
     }
 
 
-    pub fn tokenize(&mut self, source: &str) {
+    pub fn tokenize(&mut self) {
+        let source = self.source.clone();
         let mut chars = source.chars().into_iter();
         for (count, literal) in chars.enumerate() {
             let kind = self.scan_token(literal);
 
-            let token = Token::create_token(source, literal, kind, self.line);
+            let token = Token::create_token(&source, literal, kind, self.line);
             self.tokens.push(token);
         }
     }

@@ -66,8 +66,7 @@ mod tests {
     fn tokenization() {
         let valid_lox = r"('s...d,2\\.*aslkdj');
         (';.,2,4,5.;
-         "
-        .to_string();
+         " .to_string();
 
         let mut scanner = Scanner::new(valid_lox);
         scanner.tokenize();
