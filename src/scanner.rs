@@ -1,5 +1,3 @@
-use std::fmt;
-
 use super::TokenKind;
 
 /// literal is the string itself
@@ -67,22 +65,38 @@ impl Token {
 /// source: String
 pub struct Scanner {
     pub tokens: Vec<Token>,
+    pub source: String,
+    chars: char,
+    line: usize,
+    count: usize,
 }
 
 impl Scanner {
-    pub fn new() -> Self {
-        Scanner { tokens: vec![] }
+    pub fn new(source: String) -> Self {
+        Scanner {
+            tokens: vec![],
+            source,
+            line: 0,
+            chars: '\'',
+            count: 0,
+        }
     }
 
-    pub fn eol(source: String, current: usize) -> bool {
-        let con = current >= source.len();
-        con
+    pub fn is_at_end(&self) -> bool {
+        self.count >= self.source.len()
     }
+
+    pub fn eol(&self) -> bool {
+        let ch = &self.source[self.count + 1..self.count + 2];
+        if ch == "\n" {
+            true
+        } else {
+            false
+        }
+    }
+
 
     pub fn tokenize(&mut self, source: &str) {
-        let Self { tokens } = self;
-        let mut line = 0;
-
         let mut chars = source.chars().into_iter();
         for (count, literal) in chars.enumerate() {
             let kind = match literal {
@@ -98,56 +112,30 @@ impl Scanner {
                 '-' => TokenKind::Minus,
                 '+' => TokenKind::Plus,
                 ';' => TokenKind::Semicolon,
-                '\\' =>  {
-                    let character = &source[count+1..count + 2];
-                    if character == "\\" {
-                        TokenKind::Comment
-                    } else {
-                        TokenKind::Backslash
-                    }
-                }
+                
+                // TODO: Comment parsing.
+                '\\' =>  TokenKind::Backslash,
 
                 '*' => TokenKind::Star,
                 '=' => TokenKind::Equal,
                 '\n' => {
-                    line += 1;
+                    self.line += 1;
                     TokenKind::Newline
                 },
 
-                '>' => {
-                    let character = &source[count+1..count + 2];
-                    if character == "=" {
-                        TokenKind::Greater_or_equal
-                    } else {
-                        TokenKind::Greater
-                    }
-                },
-                '<' => {
-                    let character = &source[count+1..count + 2];
-                     if character == "=" {
-                        TokenKind::Less_than_or_equal
-                    } else {
-                        TokenKind::Less_than
-                    }
-                },
+                '>' => self.lookahead('=', TokenKind::Greater_or_equal, TokenKind::Greater),
+                '<' => self.lookahead('=', TokenKind::Less_than_or_equal, TokenKind::Less_than),
 
-                '!' => {
-                    let character = &source[count+1..count + 2];
-                     if character == "=" {
-                        TokenKind::Bang_equal
-                    } else {
-                        TokenKind::Bang
-                    }
-                },
+                '!' => self.lookahead('=', TokenKind::Bang_equal, TokenKind::Bang),
 
                 '{' => TokenKind::Left_brace,
                 '}' => TokenKind::Left_brace,
 
-                _ => TokenKind::Error(literal, line),
+                _ => TokenKind::Error(literal, self.line),
             };
 
-            let token = Token::create_token(source, literal, kind, line);
-            tokens.push(token);
+            let token = Token::create_token(source, literal, kind, self.line);
+            self.tokens.push(token);
         }
     }
 
@@ -159,6 +147,23 @@ impl Scanner {
             if !s.is_empty() {
                 println!("{}", s);
             }
+        }
+    }
+
+    pub fn advance(&mut self) -> char {
+        self.count += 1;
+
+        self.source.as_bytes()[self.count] as char
+    }
+
+    /// if `look_for` is found, then return `v1`, else `v2`
+    pub fn lookahead(&self, look_for: char, v1: TokenKind, v2: TokenKind) -> TokenKind {
+        let character = self.advance();
+
+        if character == look_for {
+            v1
+        } else {
+            v2
         }
     }
 }

@@ -1,5 +1,3 @@
-use std::fmt;
-
 #[derive(Clone)]
 pub enum TokenKind {
     Single_quote,
