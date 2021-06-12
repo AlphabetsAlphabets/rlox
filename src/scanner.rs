@@ -1,5 +1,3 @@
-use std::fmt;
-
 use super::TokenKind;
 
 /// literal is the string itself
@@ -81,10 +79,11 @@ impl Scanner {
             line: 0,
         }
     }
+}
 
-    pub fn eol(source: String, current: usize) -> bool {
-        let con = current >= source.len();
-        con
+impl Scanner {
+    fn is_at_end(&self) -> bool {
+        self.count >= self.source.len()
     }
 
     fn scan_token(&mut self, literal: char) -> TokenKind {
@@ -105,7 +104,7 @@ impl Scanner {
             '-' => TokenKind::Minus,
             '+' => TokenKind::Plus,
             ';' => TokenKind::Semicolon,
-            '\\' => self.lookahead(),
+            '\\' => TokenKind::Backslash,
             '*' => TokenKind::Star,
             '=' => TokenKind::Equal,
             '\n' => {
@@ -113,31 +112,9 @@ impl Scanner {
                 TokenKind::Newline
             },
 
-            '>' => {
-                let character = &source[count+1..count + 2];
-                if character == "=" {
-                    TokenKind::Greater_or_equal
-                } else {
-                    TokenKind::Greater
-                }
-            },
-            '<' => {
-                let character = &source[count+1..count + 2];
-                 if character == "=" {
-                    TokenKind::Less_than_or_equal
-                } else {
-                    TokenKind::Less_than
-                }
-            },
-
-            '!' => {
-                let character = &source[count+1..count + 2];
-                 if character == "=" {
-                    TokenKind::Bang_equal
-                } else {
-                    TokenKind::Bang
-                }
-            },
+            '>' => self.lookahead('=', TokenKind::Greater_or_equal, TokenKind::Greater),
+            '<' => self.lookahead('=', TokenKind::Less_than_or_equal, TokenKind::Less_than),
+            '!' => self.lookahead('=', TokenKind::Bang_equal, TokenKind::Bang),
 
             '{' => TokenKind::Left_brace,
             '}' => TokenKind::Left_brace,
@@ -145,6 +122,16 @@ impl Scanner {
             _ => TokenKind::Error(literal, self.line),
         }
     }
+
+    fn eol(&self) -> bool {
+        let ch = &self.source[self.count + 1..self.count + 2];
+        if ch == "\n" {
+            true
+        } else {
+            false
+        }
+    }
+
 
     pub fn tokenize(&mut self, source: &str) {
         let mut chars = source.chars().into_iter();
@@ -164,6 +151,22 @@ impl Scanner {
             if !s.is_empty() {
                 println!("{}", s);
             }
+        }
+    }
+
+    pub fn advance(&mut self) -> char {
+        self.count += 1;
+        self.source.as_bytes()[self.count] as char
+    }
+
+    /// if `look_for` is found, then return `v1`, else `v2`
+    pub fn lookahead(&self, look_for: char, v1: TokenKind, v2: TokenKind) -> TokenKind {
+        let character = self.advance();
+
+        if character == look_for {
+            v1
+        } else {
+            v2
         }
     }
 }

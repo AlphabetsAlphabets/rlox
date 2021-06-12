@@ -14,27 +14,31 @@ use token_kind::TokenKind;
 
 pub fn run_file(path: &str) {
     let path = Path::new(&path);
-    let content = fs::read_to_string(path)
-        .expect("The file does not exist.");
+    let content = fs::read_to_string(path).expect("The file does not exist.");
 
-    let mut scanner = Scanner::new();
-    scanner.tokenize(&content);
+    let mut scanner = Scanner::new(content);
     scanner.print();
 }
 
-fn run_prompt() {
+fn repl() {
     println!("Welcome to the rlox interactive REPL");
 
-    let mut scanner = Scanner::new();
     let mut string = String::new();
+    let mut scanner = Scanner::new("".to_string());
     loop {
         print!("-> ");
         io::stdout().flush().unwrap();
 
         io::stdin().read_line(&mut string).unwrap();
+        scanner.source = string.clone();
+        string.clear();
 
-        scanner.tokenize(&string);
+        scanner.tokenize();
         scanner.print();
+
+        // eval here
+
+        scanner.tokens.clear();
     }
 }
 
@@ -44,7 +48,7 @@ fn spawn() {
     if length >= 2 {
         run_file(&args[1]);
     } else {
-        run_prompt();
+        repl();
     }
 }
 
@@ -54,18 +58,19 @@ fn main() {
 
 #[cfg(test)]
 mod tests {
+    use super::run_file;
     use super::Scanner;
     use super::Token;
-    use super::run_file;
 
     #[test]
     fn tokenization() {
         let valid_lox = r"('s...d,2\\.*aslkdj');
         (';.,2,4,5.;
-         ";
+         "
+        .to_string();
 
-        let mut scanner = Scanner::new();
-        scanner.tokenize(valid_lox);
+        let mut scanner = Scanner::new(valid_lox);
+        scanner.tokenize();
         &scanner.print();
 
         assert_eq!(true, true);
@@ -75,5 +80,11 @@ mod tests {
     fn operators() {
         let operators = "src/tests/operators.lox";
         run_file(operators);
+    }
+
+    #[test]
+    fn error() {
+        let error_file = "src/tests/errors.lox";
+        run_file(error_file);
     }
 }
