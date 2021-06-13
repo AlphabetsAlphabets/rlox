@@ -7,7 +7,6 @@ use std::path::Path;
 
 mod scanner;
 use scanner::Scanner;
-use scanner::Token;
 
 mod token_kind;
 use token_kind::TokenKind;
@@ -60,19 +59,15 @@ fn main() {
 mod tests {
     use super::run_file;
     use super::Scanner;
-    use super::Token;
 
     #[test]
     fn tokenization() {
-        let valid_lox = r"('s...d,2\\.*aslkdj');
-        (';.,2,4,5.;
-         " .to_string();
+        // designed to get output
+        let valid_lox = "....()=>*".to_string();
 
         let mut scanner = Scanner::new(valid_lox);
         scanner.tokenize();
         &scanner.print();
-
-        assert_eq!(true, true);
     }
 
     #[test]
@@ -85,5 +80,11 @@ mod tests {
     fn error() {
         let error_file = "src/tests/errors.lox";
         run_file(error_file);
+    }
+
+    #[test]
+    fn strings() {
+        let string_file = "src/tests/string.lox";
+        run_file(string_file);
     }
 }

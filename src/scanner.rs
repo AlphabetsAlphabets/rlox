@@ -1,3 +1,4 @@
+// reference: https://gist.github.com/rust-play/3df0d4653d553f1deb9b211227fee840
 use super::TokenKind;
 
 /// literal is the string itself
@@ -60,9 +61,10 @@ impl Token {
     }
 }
 
-/// Fields: tokens, source.
-/// Tokens: Vec<Token>
-/// source: String
+/// Tokens: Vec<Token>, vec of tokens
+/// source: String, the entire lox file
+/// count: usize, character in a line
+/// line: usize, current line.
 pub struct Scanner {
     pub tokens: Vec<Token>,
     pub source: String,
@@ -87,16 +89,12 @@ impl Scanner {
     }
 
     fn scan_token(&mut self, literal: char) -> TokenKind {
-        let count = self.count;
-        let line = self.line;
-        let source = &self.source;
-
         match literal {
-            '\'' => TokenKind::Single_quote,
-            '"' => TokenKind::Double_quote,
+            '\'' => TokenKind::SingleQuote,
+            '"' => TokenKind::DoubleQuote,
 
-            '(' => TokenKind::Left_paren,
-            ')' => TokenKind::Right_paren,
+            '(' => TokenKind::LeftParen,
+            ')' => TokenKind::RightParen,
 
             ',' => TokenKind::Comma,
             '.' => TokenKind::Dot,
@@ -104,23 +102,62 @@ impl Scanner {
             '-' => TokenKind::Minus,
             '+' => TokenKind::Plus,
             ';' => TokenKind::Semicolon,
-            '\\' => TokenKind::Backslash,
+            '\\' => {
+                if self.peek() == '\\' {
+                    while self.peek() != '\n' && !self.is_at_end() {
+                        self.advance();
+                    };
+                    TokenKind::Comment
+                } else {
+                    TokenKind::Backslash
+                }
+            },
             '*' => TokenKind::Star,
             '=' => TokenKind::Equal,
-            '\n' => {
+            literal if literal == '\n' || literal == '\r' => {
                 self.line += 1;
                 TokenKind::Newline
             },
 
-            '>' => self.lookahead('=', TokenKind::Greater_or_equal, TokenKind::Greater),
-            '<' => self.lookahead('=', TokenKind::Less_than_or_equal, TokenKind::Less_than),
-            '!' => self.lookahead('=', TokenKind::Bang_equal, TokenKind::Bang),
+            '>' => self.lookahead('=', TokenKind::GreaterOrEqual, TokenKind::Greater),
+            '<' => self.lookahead('=', TokenKind::LessThanOrEqual, TokenKind::LessThan),
+            '!' => self.lookahead('=', TokenKind::BangEqual, TokenKind::Bang),
 
-            '{' => TokenKind::Left_brace,
-            '}' => TokenKind::Left_brace,
+            '{' => TokenKind::LeftBrace,
+            '}' => TokenKind::RightBrace,
+
+            literal if literal.is_ascii_alphabetic() || literal == '_' => {
+                let start = self.count - 1;
+                while self.peek().is_alphanumeric() || self.peek() == '_' {
+                    self.count += 1;
+                }
+                let lexeme = &self.source[start..self.count];
+                TokenKind::String
+            },
 
             _ => TokenKind::Error(literal, self.line),
         }
+    }
+
+    fn advance(&mut self) -> char {
+        self.count += 1;
+        self.previous()
+    }
+
+    fn previous(&self) -> char {
+        self.source
+            .as_bytes()
+            .get(self.count - 1)
+            .copied()
+            .unwrap_or(b'\0') as char
+    }
+
+    fn peek(&self) -> char {
+        self.source
+            .as_bytes()
+            .get(self.count)
+            .copied()
+            .unwrap_or(b'\0') as char
     }
 
     fn eol(&self) -> bool {
@@ -132,14 +169,14 @@ impl Scanner {
         }
     }
 
-
     pub fn tokenize(&mut self) {
         let source = self.source.clone();
-        let mut chars = source.chars().into_iter();
-        for (count, literal) in chars.enumerate() {
+        let chars = source.chars().into_iter();
+        for literal in chars {
             let kind = self.scan_token(literal);
 
             let token = Token::create_token(&source, literal, kind, self.line);
+            self.count += 1;
             self.tokens.push(token);
         }
     }
@@ -155,13 +192,8 @@ impl Scanner {
         }
     }
 
-    pub fn advance(&mut self) -> char {
-        self.count += 1;
-        self.source.as_bytes()[self.count] as char
-    }
-
     /// if `look_for` is found, then return `v1`, else `v2`
-    pub fn lookahead(&self, look_for: char, v1: TokenKind, v2: TokenKind) -> TokenKind {
+    fn lookahead(&mut self, look_for: char, v1: TokenKind, v2: TokenKind) -> TokenKind {
         let character = self.advance();
 
         if character == look_for {
