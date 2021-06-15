@@ -61,25 +61,37 @@ mod tests {
     use super::Scanner;
 
     #[test]
+    fn string_error() {
+        let lox = "h_i&".to_string();
+        let mut scanner = Scanner::new(lox);
+
+        scanner.tokenize();
+        scanner.print();
+    }
+
+    #[test]
+    fn string_ok() {
+        let lox = "h_i2".to_string();
+        let mut scanner = Scanner::new(lox);
+
+        scanner.tokenize();
+        scanner.print();
+    }
+
+    #[test]
     fn tokenization() {
-        // designed to get output
-        let valid_lox = "....()=>*".to_string();
+        // designed to get a mix of errors and successes output
+        let valid_lox = "&%$....()=>*Hi_there_how_are_you".to_string();
 
         let mut scanner = Scanner::new(valid_lox);
         scanner.tokenize();
-        &scanner.print();
+        scanner.print();
     }
 
     #[test]
     fn operators() {
         let operators = "src/tests/operators.lox";
         run_file(operators);
-    }
-
-    #[test]
-    fn error() {
-        let error_file = "src/tests/errors.lox";
-        run_file(error_file);
     }
 
     #[test]

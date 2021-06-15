@@ -3,26 +3,13 @@ use super::TokenKind;
 
 /// literal is the string itself
 /// lexeme is a character in a string
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Token {
     pub has_error: bool,
     pub token_kind: TokenKind,
     pub literal: String,
     pub lexeme: String,
     pub line_number: usize,
-}
-
-// Used for tests
-impl Default for Token {
-    fn default() -> Self {
-        Token {
-            has_error: false,
-            token_kind: TokenKind::Eof,
-            lexeme: "lexeme".to_string(),
-            literal: "literal".to_string(),
-            line_number: 0,
-        }
-    }
 }
 
 impl Token {
@@ -40,17 +27,6 @@ impl Token {
         }
     }
 
-    // Error "handling" or "reporting"
-    fn error(mut self, line_number: usize, message: &str) {
-        self.report(line_number, "", message);
-    }
-
-    fn report(mut self, line_number: usize, at: &str, message: &str) {
-        let error = format!("[line {}] {}: {}", line_number, at, message);
-        println!("{}", error);
-        self.has_error = true;
-    }
-
     // Creates tokens during tokenization.
     fn create_token(literal: &str, lexeme: char, token: TokenKind, line_number: usize) -> Token {
         let literal = literal.to_string();
@@ -61,31 +37,33 @@ impl Token {
     }
 }
 
-/// Tokens: Vec<Token>, vec of tokens
+/// Tokens: Vec<Token>, vec of tokens, to be used.
 /// source: String, the entire lox file
-/// count: usize, character in a line
+/// column: usize, keeps track of which column the scanner is at in a line
 /// line: usize, current line.
 pub struct Scanner {
     pub tokens: Vec<Token>,
     pub source: String,
-    count: usize,
+    column: usize,
     line: usize
 }
 
 impl Scanner {
     pub fn new(source: String) -> Self {
-        Scanner { 
+        let scanner = Scanner { 
             tokens: vec![],
             source,
-            count: 0,
+            column: 0,
             line: 0,
-        }
+        };
+        
+        scanner
     }
 }
 
 impl Scanner {
     fn is_at_end(&self) -> bool {
-        self.count >= self.source.len()
+        self.column >= self.source.len()
     }
 
     fn scan_token(&mut self, literal: char) -> TokenKind {
@@ -114,6 +92,7 @@ impl Scanner {
             },
             '*' => TokenKind::Star,
             '=' => TokenKind::Equal,
+
             literal if literal == '\n' || literal == '\r' => {
                 self.line += 1;
                 TokenKind::Newline
@@ -126,13 +105,19 @@ impl Scanner {
             '{' => TokenKind::LeftBrace,
             '}' => TokenKind::RightBrace,
 
+            // TODO: `>!{Hi_there` extract "Hi_there" from this.
             literal if literal.is_ascii_alphabetic() || literal == '_' => {
-                let start = self.count - 1;
+
+                let mut string: Vec<char> = vec![];
+                
+                // Checks if the next character is an alphabet, number, or underscore
+                // then increments the column, to check the next character
                 while self.peek().is_alphanumeric() || self.peek() == '_' {
-                    self.count += 1;
+                    let ch = self.peek();
+                    string.push(ch);
+                    self.column += 1;
                 }
-                let lexeme = &self.source[start..self.count];
-                TokenKind::String
+                TokenKind::String(string.iter().collect())
             },
 
             _ => TokenKind::Error(literal, self.line),
@@ -140,14 +125,14 @@ impl Scanner {
     }
 
     fn advance(&mut self) -> char {
-        self.count += 1;
+        self.column += 1;
         self.previous()
     }
 
     fn previous(&self) -> char {
         self.source
             .as_bytes()
-            .get(self.count - 1)
+            .get(self.column - 1)
             .copied()
             .unwrap_or(b'\0') as char
     }
@@ -155,13 +140,13 @@ impl Scanner {
     fn peek(&self) -> char {
         self.source
             .as_bytes()
-            .get(self.count)
+            .get(self.column)
             .copied()
             .unwrap_or(b'\0') as char
     }
 
     fn eol(&self) -> bool {
-        let ch = &self.source[self.count + 1..self.count + 2];
+        let ch = &self.source[self.column + 1..self.column + 2];
         if ch == "\n" {
             true
         } else {
@@ -176,19 +161,26 @@ impl Scanner {
             let kind = self.scan_token(literal);
 
             let token = Token::create_token(&source, literal, kind, self.line);
-            self.count += 1;
+            self.column += 1;
             self.tokens.push(token);
         }
     }
 
+    // TODO: Use a match to extract the string from the tuple struct
     pub fn print(&self) {
         let tokens = &self.tokens;
         for token in tokens {
             let s = token.token_kind.display();
 
-            if !s.is_empty() {
-                println!("{}", s);
-            }
+            match s {
+                Ok(text) => {
+                    if !text.is_empty() {
+                        println!("{}", text);
+                    }
+                }
+                Err(err) => println!("{}", err),
+            };
+
         }
     }
 

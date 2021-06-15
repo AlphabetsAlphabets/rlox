@@ -1,4 +1,4 @@
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum TokenKind {
     SingleQuote,
     DoubleQuote,
@@ -28,15 +28,15 @@ pub enum TokenKind {
     Comment,
     Space,
 
-    String,
+    String(String),
     Whitespace,
     Eof,
     Error(char, usize),
 }
 
 impl TokenKind {
-    pub fn display(&self) -> String {
-        // TODO: Complete the match statement with all of the possible enum variants.
+    pub fn display(&self) -> Result<String, String> {
+        // TODO: Change the return type to a `TokenKind` instead.
         let token_kind = match self {
             Self::SingleQuote => "".to_string(),
             Self::DoubleQuote => "".to_string(),
@@ -67,7 +67,7 @@ impl TokenKind {
             Self::LessThan => "".to_string(),
             Self::LessThanOrEqual => "".to_string(),
 
-            Self::String => "".to_string(),
+            Self::String(text) => text.to_string(),
             Self::Whitespace => "".to_string(),
             Self::Error(character, line) => {
                 format!("Unexpected character: '{}' at line {}.", character, line)
@@ -75,6 +75,10 @@ impl TokenKind {
             Self::Eof => "".to_string(),
         };
 
-        token_kind
+        if token_kind.contains("Unexpected") {
+            Err(token_kind)
+        } else {
+            Ok(token_kind)
+        }
     }
 }
