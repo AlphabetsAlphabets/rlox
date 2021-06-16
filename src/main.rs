@@ -36,7 +36,6 @@ fn repl() {
         scanner.print();
 
         // eval here
-
         scanner.tokens.clear();
     }
 }
@@ -71,7 +70,7 @@ mod tests {
 
     #[test]
     fn string_ok() {
-        let lox = "h_i2".to_string();
+        let lox = "h_ii".to_string();
         let mut scanner = Scanner::new(lox);
 
         scanner.tokenize();

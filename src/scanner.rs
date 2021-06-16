@@ -5,7 +5,6 @@ use super::TokenKind;
 /// lexeme is a character in a string
 #[derive(Clone, Debug)]
 pub struct Token {
-    pub has_error: bool,
     pub token_kind: TokenKind,
     pub literal: String,
     pub lexeme: String,
@@ -19,7 +18,6 @@ impl Token {
     /// line_number: usize
     pub fn new(token_kind: TokenKind, lexeme: String, literal: String, line_number: usize) -> Self {
         Token {
-            has_error: false,
             token_kind,
             literal,
             lexeme,
@@ -80,16 +78,19 @@ impl Scanner {
             '-' => TokenKind::Minus,
             '+' => TokenKind::Plus,
             ';' => TokenKind::Semicolon,
-            '\\' => {
-                if self.peek() == '\\' {
+            '/' => {
+                if self.peek() == '/' {
                     while self.peek() != '\n' && !self.is_at_end() {
                         self.advance();
+                        self.column += 1;
                     };
                     TokenKind::Comment
                 } else {
                     TokenKind::Backslash
                 }
             },
+
+            ' ' => TokenKind::Space,
             '*' => TokenKind::Star,
             '=' => TokenKind::Equal,
 
@@ -117,6 +118,7 @@ impl Scanner {
                     string.push(ch);
                     self.column += 1;
                 }
+
                 TokenKind::String(string.iter().collect())
             },
 
@@ -166,8 +168,7 @@ impl Scanner {
         }
     }
 
-    // TODO: Use a match to extract the string from the tuple struct
-    pub fn print(&self) {
+    pub fn print(&mut self) {
         let tokens = &self.tokens;
         for token in tokens {
             let s = token.token_kind.display();
@@ -177,7 +178,8 @@ impl Scanner {
                     if !text.is_empty() {
                         println!("{}", text);
                     }
-                }
+                },
+
                 Err(err) => println!("{}", err),
             };
 
