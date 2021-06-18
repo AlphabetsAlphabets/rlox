@@ -43,18 +43,18 @@ pub struct Scanner {
     pub tokens: Vec<Token>,
     pub source: String,
     column: usize,
-    line: usize
+    line: usize,
 }
 
 impl Scanner {
     pub fn new(source: String) -> Self {
-        let scanner = Scanner { 
+        let scanner = Scanner {
             tokens: vec![],
             source,
             column: 0,
-            line: 0,
+            line: 1,
         };
-        
+
         scanner
     }
 }
@@ -83,21 +83,21 @@ impl Scanner {
                     while self.peek() != '\n' && !self.is_at_end() {
                         self.advance();
                         self.column += 1;
-                    };
+                    }
                     TokenKind::Comment
                 } else {
                     TokenKind::Backslash
                 }
-            },
+            }
 
-            ' ' => TokenKind::Space,
+            ' ' => TokenKind::Whitespace,
             '*' => TokenKind::Star,
             '=' => TokenKind::Equal,
 
             literal if literal == '\n' || literal == '\r' => {
                 self.line += 1;
                 TokenKind::Newline
-            },
+            }
 
             '>' => self.lookahead('=', TokenKind::GreaterOrEqual, TokenKind::Greater),
             '<' => self.lookahead('=', TokenKind::LessThanOrEqual, TokenKind::LessThan),
@@ -108,9 +108,8 @@ impl Scanner {
 
             // TODO: `>!{Hi_there` extract "Hi_there" from this.
             literal if literal.is_ascii_alphabetic() || literal == '_' => {
-
                 let mut string: Vec<char> = vec![];
-                
+
                 // Checks if the next character is an alphabet, number, or underscore
                 // then increments the column, to check the next character
                 while self.peek().is_alphanumeric() || self.peek() == '_' {
@@ -120,7 +119,7 @@ impl Scanner {
                 }
 
                 TokenKind::String(string.iter().collect())
-            },
+            }
 
             _ => TokenKind::Error(literal, self.line),
         }
@@ -147,15 +146,6 @@ impl Scanner {
             .unwrap_or(b'\0') as char
     }
 
-    fn eol(&self) -> bool {
-        let ch = &self.source[self.column + 1..self.column + 2];
-        if ch == "\n" {
-            true
-        } else {
-            false
-        }
-    }
-
     pub fn tokenize(&mut self) {
         let source = self.source.clone();
         let chars = source.chars().into_iter();
@@ -178,11 +168,10 @@ impl Scanner {
                     if !text.is_empty() {
                         println!("{}", text);
                     }
-                },
+                }
 
                 Err(err) => println!("{}", err),
             };
-
         }
     }
 

@@ -26,7 +26,6 @@ pub enum TokenKind {
     Greater,
 
     Comment,
-    Space,
 
     String(String),
     Whitespace,
@@ -60,7 +59,6 @@ impl TokenKind {
             Self::Equal => "".to_string(),
             Self::Newline => "".to_string(),
             Self::Comment => "".to_string(),
-            Self::Space => "".to_string(),
 
             Self::Greater => "".to_string(),
             Self::GreaterOrEqual => "".to_string(),

@@ -11,11 +11,13 @@ use scanner::Scanner;
 mod token_kind;
 use token_kind::TokenKind;
 
+/// Passes the lox file to be processed by the scanenr
 pub fn run_file(path: &str) {
     let path = Path::new(&path);
     let content = fs::read_to_string(path).expect("The file does not exist.");
 
     let mut scanner = Scanner::new(content);
+    scanner.tokenize();
     scanner.print();
 }
 
@@ -80,7 +82,7 @@ mod tests {
     #[test]
     fn tokenization() {
         // designed to get a mix of errors and successes output
-        let valid_lox = "&%$....()=>*Hi_there_how_are_you".to_string();
+        let valid_lox = "&%$....()=>* Hi_there_how_are_you\n&\n&\n//comment\n".to_string();
 
         let mut scanner = Scanner::new(valid_lox);
         scanner.tokenize();
@@ -97,5 +99,12 @@ mod tests {
     fn strings() {
         let string_file = "src/tests/string.lox";
         run_file(string_file);
+    }
+
+    #[test]
+    fn lox() {
+        println!("Output: ");
+        let lox = "src/tests/main.lox";
+        run_file(lox);
     }
 }
