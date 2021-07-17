@@ -1,110 +1,73 @@
-// reference: https://gitlab.com/OptimalStrategy/rlox/-/blob/dev/src/lib/frontend/scanner.rs
 use std::env;
 use std::fs;
-use std::io;
-use std::io::Write;
+use std::io::{stdin, stdout, Write};
 use std::path::Path;
 
+mod token_type;
+use token_type::*;
+
 mod scanner;
-use scanner::Scanner;
 
-mod token_kind;
-use token_kind::TokenKind;
-
-/// Passes the lox file to be processed by the scanenr
-pub fn run_file(path: &str) {
-    let path = Path::new(&path);
-    let content = fs::read_to_string(path).expect("The file does not exist.");
-
-    let mut scanner = Scanner::new(content);
-    scanner.tokenize();
-    scanner.print();
+struct Lox {
+    had_error: bool,
 }
 
-fn repl() {
-    println!("Welcome to the rlox interactive REPL");
-
-    let mut string = String::new();
-    let mut scanner = Scanner::new("".to_string());
-    loop {
-        print!("-> ");
-        io::stdout().flush().unwrap();
-
-        io::stdin().read_line(&mut string).unwrap();
-        scanner.source = string.clone();
-        string.clear();
-
-        scanner.tokenize();
-        scanner.print();
-
-        // eval here
-        scanner.tokens.clear();
+impl Lox {
+    fn new() -> Self {
+        Lox { had_error: false }
     }
-}
 
-fn spawn() {
-    let args: Vec<String> = env::args().collect();
-    let length = args.len();
-    if length >= 2 {
-        run_file(&args[1]);
-    } else {
-        repl();
+    fn main(&mut self, args: Vec<String>) {
+        if args.len() > 2 {
+            println!("Usage: rlox [script]");
+        } else if args.len() == 2 {
+            self.run_file(args[1].clone());
+            if self.had_error {
+                std::process::exit(65);
+            }
+        } else {
+            self.run_prompt();
+        }
+    }
+
+    fn run_prompt(&mut self) {
+        let mut input = String::new();
+
+        loop {
+            print!("-> ");
+            stdout().flush().unwrap();
+
+            stdin().read_line(&mut input).unwrap();
+
+            println!("{}", &input);
+            self.run(input.clone());
+            self.had_error = false;
+            input.clear();
+        }
+    }
+
+    fn run(&self, source: String) {
+        // Scanner:new();
+    }
+
+    fn run_file(&self, path: String) {
+        let source = fs::read_to_string(path).unwrap();
+        self.run(source);
+    }
+
+    fn error(&mut self, line: usize, message: String) {
+        self.report(line, "".to_string(), message);
+    }
+
+    fn report(&mut self, line: usize, col: String, message: String) {
+        let msg = format!("[line {}] Error {}: {}", line, col, message);
+        self.had_error = true;
+        eprintln!("{}", msg);
     }
 }
 
 fn main() {
-    spawn();
-}
-
-#[cfg(test)]
-mod tests {
-    use super::run_file;
-    use super::Scanner;
-
-    #[test]
-    fn string_error() {
-        let lox = "h_i&".to_string();
-        let mut scanner = Scanner::new(lox);
-
-        scanner.tokenize();
-        scanner.print();
-    }
-
-    #[test]
-    fn string_ok() {
-        let lox = "h_ii".to_string();
-        let mut scanner = Scanner::new(lox);
-
-        scanner.tokenize();
-        scanner.print();
-    }
-
-    #[test]
-    fn tokenization() {
-        // designed to get a mix of errors and successes output
-        let valid_lox = "&%$....()=>* Hi_there_how_are_you\n&\n&\n//comment\n".to_string();
-
-        let mut scanner = Scanner::new(valid_lox);
-        scanner.tokenize();
-        scanner.print();
-    }
-
-    #[test]
-    fn operators() {
-        let operators = "src/tests/operators.lox";
-        run_file(operators);
-    }
-
-    #[test]
-    fn strings() {
-        let string_file = "src/tests/string.lox";
-        run_file(string_file);
-    }
-
-    #[test]
-    fn lox() {
-        println!("Output: ");
-        let lox = "src/tests/main.lox";
-        run_file(lox);
-    }
+    let args: Vec<String> = env::args().collect();
+    let lox = Lox::new();
+    lox.main(args);
 }
