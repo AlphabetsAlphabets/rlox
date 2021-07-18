@@ -7,8 +7,9 @@ mod token_type;
 use token_type::*;
 
 mod scanner;
+use scanner::Scanner;
 
-struct Lox {
+pub struct Lox {
     had_error: bool,
 }
 
@@ -30,6 +31,7 @@ impl Lox {
         }
     }
 
+    /// Starts the interactive repl
     fn run_prompt(&mut self) {
         let mut input = String::new();
 
@@ -38,16 +40,26 @@ impl Lox {
             stdout().flush().unwrap();
 
             stdin().read_line(&mut input).unwrap();
-
             println!("{}", &input);
+
+            let mut scanner = Scanner::new(input.clone());
+            scanner.scan_tokens();
+
+            let tokens = scanner.tokens;
+            for token in tokens {
+                println!("{:?}", token);
+                println!("=========");
+            }
+
             self.run(input.clone());
             self.had_error = false;
+
             input.clear();
         }
     }
 
     fn run(&self, source: String) {
-        // Scanner:new();
+        // Scanner::new();
     }
 
     fn run_file(&self, path: String) {
@@ -55,11 +67,11 @@ impl Lox {
         self.run(source);
     }
 
-    fn error(&mut self, line: usize, message: String) {
+    pub fn error(&mut self, line: usize, message: String) {
         self.report(line, "".to_string(), message);
     }
 
-    fn report(&mut self, line: usize, col: String, message: String) {
+    pub fn report(&mut self, line: usize, col: String, message: String) {
         let msg = format!("[line {}] Error {}: {}", line, col, message);
         self.had_error = true;
         eprintln!("{}", msg);
@@ -68,6 +80,6 @@ impl Lox {
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    let lox = Lox::new();
+    let mut lox = Lox::new();
     lox.main(args);
 }
