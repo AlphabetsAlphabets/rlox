@@ -2,36 +2,66 @@ use std::fmt;
 
 pub enum TokenType {
     // Single-character tokens.
-    Left_paren,
-    Right_paren,
-    Left_brace,
-    Right_brace,
+    LeftParen,
+    RightParen,
+    LeftBrace,
+    RightBrace,
+
     Comma,
     Dot,
     Minus,
     Plus,
+
     Semicolon,
-    // Slash,
+    Bang,
     Star,
+    Equal,
+
+    Greater,
+    Less,
+
+    // Two-character tokens.
+    BangEqual,
+    GreaterEqual,
+    LessEqual,
+    EqualEqual,
+
+    // Slash,
     Eof,
     Error,
+    Newline,
 }
 
 impl fmt::Display for TokenType {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let text = match self {
-            TokenType::Left_paren => "(",
-            TokenType::Right_paren => ")",
-            TokenType::Left_brace => "{",
-            TokenType::Right_brace => "}",
+            TokenType::LeftParen => "(",
+            TokenType::RightParen => ")",
+            TokenType::LeftBrace => "{",
+            TokenType::RightBrace => "}",
+
             TokenType::Comma => ",",
             TokenType::Dot => ".",
             TokenType::Minus => "-",
             TokenType::Plus => "+",
+
             TokenType::Semicolon => ";",
+            TokenType::Bang => "!",
             TokenType::Star => "*",
-            TokenType::Error => "Error",
+            TokenType::Equal => "=",
+
+            TokenType::Greater => ">",
+            TokenType::Less => "<",
+
+            TokenType::BangEqual => "!=",
+            TokenType::GreaterEqual => ">=",
+            TokenType::LessEqual => "<=",
+            TokenType::EqualEqual => "==",
+
             TokenType::Eof => "Eof",
+            TokenType::Error => "Error",
+            TokenType::Newline => "\\n",
+
         };
 
         write!(f, "{}", text)

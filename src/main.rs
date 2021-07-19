@@ -31,7 +31,7 @@ impl Lox {
         }
     }
 
-    /// Starts the interactive repl
+    // Starts the interactive repl
     fn run_prompt(&mut self) {
         let mut input = String::new();
 
@@ -45,16 +45,18 @@ impl Lox {
             let mut scanner = Scanner::new(input.clone());
             scanner.scan_tokens();
 
-            let tokens = scanner.tokens;
-            for token in tokens {
-                println!("{:?}", token);
-                println!("=========");
-            }
+            input.clear();
 
-            self.run(input.clone());
+            self.check_tokens(scanner);
             self.had_error = false;
 
-            input.clear();
+        }
+    }
+
+    fn check_tokens(&self, scanner: Scanner) {
+        for token in scanner.tokens {
+            println!("{:?}", token);
+            println!("=========");
         }
     }
 

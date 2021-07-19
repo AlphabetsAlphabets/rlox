@@ -4,7 +4,7 @@ use super::Lox;
 pub struct Scanner {
     source: String,
     pub tokens: Vec<Token>,
-    // Keeps track of what, and where the scanner is looking at
+    // These three fields keeps track of what, and where the scanner is looking at
     start: usize,
     current: usize,
     line: usize,
@@ -36,16 +36,27 @@ impl Scanner {
     // matches on character to return `TokenType`
     fn tokenize(&mut self, ch: char) -> TokenType {
         let token = match ch {
-            '(' => TokenType::Left_paren,
-            ')' => TokenType::Right_paren,
-            '{' => TokenType::Left_brace,
-            '}' => TokenType::Right_brace,
+            '(' => TokenType::LeftParen,
+            ')' => TokenType::RightParen,
+            '{' => TokenType::LeftBrace,
+            '}' => TokenType::RightBrace,
+
             ',' => TokenType::Comma,
             '.' => TokenType::Dot,
             '-' => TokenType::Minus,
             '+' => TokenType::Plus,
+
             ';' => TokenType::Semicolon,
             '*' => TokenType::Star,
+            '\n' => {
+                self.line += 1;
+                TokenType::Newline
+            },
+            '!' => self.lookahead('=', TokenType::BangEqual, TokenType::BangEqual),
+
+            '=' => self.lookahead('=', TokenType::EqualEqual, TokenType::Equal),
+            '>' => self.lookahead('=', TokenType::GreaterEqual, TokenType::Greater),
+            '<' => self.lookahead('=', TokenType::LessEqual, TokenType::Less),
             _ => {
                 // error reporting here
                 TokenType::Error
@@ -79,8 +90,8 @@ impl Scanner {
         char::from(byte[0])
     }
 
-    // r# can let you use reserved keywords as function names.
-    fn r#match(&mut self, expected: char) -> bool {
+    // this is equivalent to `match` in the tutorial
+    fn peek(&mut self, expected: char) -> bool {
         if self.is_at_end() {
             false
         } else if self.advance() != expected {
@@ -91,9 +102,17 @@ impl Scanner {
         }
     }
 
+    /// if `expected` is the next character returns `v1` else `v2`
+    fn lookahead(&mut self, expected: char, v1: TokenType, v2: TokenType) -> TokenType {
+        if self.peek(expected) {
+            v1
+        } else {
+            v2
+        }
+    }
+
     fn add_token(&mut self, kind: TokenType, literal: String) {
-        let text = &self.source[self.start..self.current];
-        let token = Token::new(kind, text.to_string(), literal, self.line);
+        let token = Token::new(kind, literal.clone(), literal, self.line);
         self.tokens.push(token);
     }
 }
