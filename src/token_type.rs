@@ -1,5 +1,6 @@
 use std::fmt;
 
+#[derive(PartialEq)]
 pub enum TokenType {
     // Single-character tokens.
     LeftParen,
@@ -19,14 +20,18 @@ pub enum TokenType {
 
     Greater,
     Less,
+    Slash,
+    Whitespace,
+
+    String(String),
 
     // Two-character tokens.
+    Comment,
     BangEqual,
     GreaterEqual,
     LessEqual,
     EqualEqual,
 
-    // Slash,
     Eof,
     Error,
     Newline,
@@ -52,11 +57,16 @@ impl fmt::Display for TokenType {
 
             TokenType::Greater => ">",
             TokenType::Less => "<",
+            TokenType::Slash => "/",
+            TokenType::Whitespace => "whitespace",
 
             TokenType::BangEqual => "!=",
             TokenType::GreaterEqual => ">=",
             TokenType::LessEqual => "<=",
             TokenType::EqualEqual => "==",
+
+            TokenType::Comment => "Comment",
+            TokenType::String(_) => "String",
 
             TokenType::Eof => "Eof",
             TokenType::Error => "Error",

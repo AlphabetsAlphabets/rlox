@@ -1,7 +1,6 @@
 use std::env;
 use std::fs;
 use std::io::{stdin, stdout, Write};
-use std::path::Path;
 
 mod token_type;
 use token_type::*;
@@ -47,7 +46,7 @@ impl Lox {
 
             input.clear();
 
-            self.check_tokens(scanner);
+            //  self.check_tokens(scanner);
             self.had_error = false;
 
         }
@@ -61,7 +60,8 @@ impl Lox {
     }
 
     fn run(&self, source: String) {
-        // Scanner::new();
+        let mut scanner = Scanner::new(source);
+        scanner.scan_tokens();
     }
 
     fn run_file(&self, path: String) {
@@ -69,12 +69,12 @@ impl Lox {
         self.run(source);
     }
 
-    pub fn error(&mut self, line: usize, message: String) {
-        self.report(line, "".to_string(), message);
+    pub fn error(&mut self, line: usize, column: usize, message: String) {
+        self.report(line, column, message);
     }
 
-    pub fn report(&mut self, line: usize, col: String, message: String) {
-        let msg = format!("[line {}] Error {}: {}", line, col, message);
+    pub fn report(&mut self, line: usize, col: usize, message: String) {
+        let msg = format!("[line {}, column {}] {}", line, col, message);
         self.had_error = true;
         eprintln!("{}", msg);
     }
