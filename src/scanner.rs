@@ -90,13 +90,16 @@ impl Scanner {
 
     fn string(&mut self) -> TokenType {
         let opening_quote = self.column;
+
         while self.peek() != '"' && !self.is_at_end() {
             if self.peek() == '\n' {
                 self.line += 1;
             } 
+
             self.advance();
         }
 
+        // FIXME: It doesn't actually work
         if (self.is_at_end()) {
             let mut lox = Lox::new();
             let message = "Unterminated string.".to_string();
@@ -117,22 +120,25 @@ impl Scanner {
         let current = self.current;
         let next = self.current + 1;
 
-        let source_code = self.source.as_bytes();
-        let byte = &source_code[current..next];
-
         self.column += 1;
         self.current += 1;
-        char::from(byte[0])
+
+        let byte = self.source.as_bytes()
+            .get(self.column - 1)
+            .copied()
+            .unwrap_or(b'\0') as char;
+
+        byte
     }
 
     /// Returns the next character
     fn peek(&self) -> char {
-        let current = self.current;
-        let next = self.current + 1;
+        let byte = self.source.as_bytes()
+            .get(self.column + 1)
+            .copied()
+            .unwrap_or(b'\0') as char;
 
-        let source_code = self.source.as_bytes();
-        let byte = &source_code[current..next];
-        char::from(byte[0])
+        byte
     }
 
     /// Checks the next if the next character is equal to `expected`

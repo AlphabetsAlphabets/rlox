@@ -1,3 +1,4 @@
+// left off at: https://craftinginterpreters.com/scanning.html#string-literals
 use std::env;
 use std::fs;
 use std::io::{stdin, stdout, Write};
@@ -35,7 +36,7 @@ impl Lox {
         let mut input = String::new();
 
         loop {
-            print!("-> ");
+            print!("Lox -> ");
             stdout().flush().unwrap();
 
             stdin().read_line(&mut input).unwrap();
