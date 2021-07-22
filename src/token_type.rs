@@ -24,6 +24,7 @@ pub enum TokenType {
     Whitespace,
 
     String(String),
+    Number(usize),
 
     // Two-character tokens.
     Comment,
@@ -67,6 +68,7 @@ impl fmt::Display for TokenType {
 
             TokenType::Comment => "Comment",
             TokenType::String(_) => "String",
+            TokenType::Number(_) => "Number",
 
             TokenType::Eof => "Eof",
             TokenType::Error => "Error",

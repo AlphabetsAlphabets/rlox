@@ -1,12 +1,18 @@
+// TODO
+// Error handling is weird because it repeats with characters from the first line
+// of the file
+
 use super::token_type::*;
 use super::Lox;
 
 pub struct Scanner {
     source: String,
     pub tokens: Vec<Token>,
-    // These three fields keeps track of what, and where the scanner is looking at
+    /// The column the scanner is on
     column: usize,
+    /// Where the scanner is looking at relative to the end of the file
     current: usize,
+    /// The current line the scanner is on
     line: usize,
 }
 
@@ -81,6 +87,8 @@ impl Scanner {
             '\t' => TokenType::Whitespace,
 
             _ => {
+                // if self.is_digit(ch) {
+                // }
                 TokenType::Error
             }
         };
@@ -88,18 +96,19 @@ impl Scanner {
         token
     }
 
+    // FIXME: Always results in "Unterminated string." as the output regardless of whether or not
+    // the string was terminated or not.
     fn string(&mut self) -> TokenType {
         let opening_quote = self.column;
 
         while self.peek() != '"' && !self.is_at_end() {
             if self.peek() == '\n' {
                 self.line += 1;
-            } 
+            };
 
             self.advance();
         }
 
-        // FIXME: It doesn't actually work
         if (self.is_at_end()) {
             let mut lox = Lox::new();
             let message = "Unterminated string.".to_string();
@@ -112,21 +121,36 @@ impl Scanner {
         TokenType::String(string.to_string())
     }
 
+    fn is_digit(&self, ch: char) -> bool {
+        ch >= '0' && ch <= '9'
+    }
+
+    fn number(&mut self) {
+        while self.is_digit(self.peek()) {
+            self.advance();
+        }
+
+        if self.peek() == '.' && self.is_digit(self.peek()) {
+            self.advance();
+
+            while self.is_digit(self.peek()) {
+                self.advance();
+            }
+        }
+    }
+
     fn is_at_end(&self) -> bool {
         self.current >= self.source.len()
     }
 
     fn advance(&mut self) -> char {
-        let current = self.current;
-        let next = self.current + 1;
+        let byte = self.source.as_bytes()
+            .get(self.column)
+            .copied()
+            .unwrap_or(b'\0') as char;
 
         self.column += 1;
         self.current += 1;
-
-        let byte = self.source.as_bytes()
-            .get(self.column - 1)
-            .copied()
-            .unwrap_or(b'\0') as char;
 
         byte
     }
@@ -134,7 +158,7 @@ impl Scanner {
     /// Returns the next character
     fn peek(&self) -> char {
         let byte = self.source.as_bytes()
-            .get(self.column + 1)
+            .get(self.column)
             .copied()
             .unwrap_or(b'\0') as char;
 

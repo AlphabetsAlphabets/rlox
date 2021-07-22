@@ -40,14 +40,12 @@ impl Lox {
             stdout().flush().unwrap();
 
             stdin().read_line(&mut input).unwrap();
-            println!("{}", &input);
 
             let mut scanner = Scanner::new(input.clone());
             scanner.scan_tokens();
 
+            // self.check_tokens(scanner);
             input.clear();
-
-            //  self.check_tokens(scanner);
             self.had_error = false;
 
         }
