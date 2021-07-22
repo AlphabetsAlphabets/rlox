@@ -68,6 +68,23 @@ impl Scanner {
             '=' => self.lookahead('=', TokenType::EqualEqual, TokenType::Equal),
             '>' => self.lookahead('=', TokenType::GreaterEqual, TokenType::Greater),
             '<' => self.lookahead('=', TokenType::LessEqual, TokenType::Less),
+
+            ' ' => TokenType::Whitespace,
+            '\r' => TokenType::Whitespace,
+            '\t' => TokenType::Whitespace,
+            '/' => {
+                if self.r#match('/') {
+                    while self.peek() != '\n' {
+                        self.advance();
+                    }
+                    TokenType::Comment
+                } else {
+                    TokenType::Slash
+                }
+            },
+
+            '"' => self.string(),
+
             _ => {
                 TokenType::Error
             }
@@ -121,25 +138,24 @@ impl Scanner {
         self.current >= self.source.len()
     }
 
-    // FIXME: Only keeps track of the first character in the entire file
     fn advance(&mut self) -> char {
-        let current = self.current;
-        let next = self.current + 1;
+        let byte = self.source.as_bytes()
+            .get(self.current)
+            .copied()
+            .unwrap_or(b'\0') as char;
 
-        let source_code = self.source.as_bytes();
-        let byte = &source_code[current..next];
-
-        self.column += 1;
         self.current += 1;
-
-        char::from(byte[0])
+        self.column += 1;
+        byte
     }
 
     fn peek(&self) -> char {
-        let source_code = self.source.as_bytes();
-        let byte = &source_code[self.current..self.current + 1];
+        let byte = self.source.as_bytes()
+            .get(self.current)
+            .copied()
+            .unwrap_or(b'\0') as char;
 
-        char::from(byte[0])
+        byte
     }
 
     // this is equivalent to `match` in the tutorial

@@ -46,8 +46,6 @@ impl Lox {
 
             // self.check_tokens(scanner);
             input.clear();
-
-            self.check_tokens(scanner);
             self.had_error = false;
 
         }
@@ -75,7 +73,7 @@ impl Lox {
     }
 
     pub fn report(&mut self, line: usize, column: usize, message: String) {
-        let msg = format!("[line {}] Error {}: {}", line, column, message);
+        let msg = format!("[line {}, column {}] {}", line, column, message);
         self.had_error = true;
         eprintln!("{}", msg);
     }
