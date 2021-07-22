@@ -32,6 +32,7 @@ impl Scanner {
         while !self.is_at_end() {
             let ch = self.advance();
             let token = self.tokenize(ch);
+
             if token == TokenType::Error {
                 let message = format!("Unexpected character '{}'", ch);
                 lox.error(self.line, self.column, message);
@@ -44,7 +45,6 @@ impl Scanner {
         self.tokens.push(token);
     }
 
-    // matches on character to return `TokenType`
     fn tokenize(&mut self, ch: char) -> TokenType {
         let token = match ch {
             '(' => TokenType::LeftParen,
@@ -96,8 +96,6 @@ impl Scanner {
         token
     }
 
-    // FIXME: Always results in "Unterminated string." as the output regardless of whether or not
-    // the string was terminated or not.
     fn string(&mut self) -> TokenType {
         let opening_quote = self.column;
 
@@ -143,14 +141,15 @@ impl Scanner {
         self.current >= self.source.len()
     }
 
+    // FIXME: Only keeps track of the first character in the entire file
     fn advance(&mut self) -> char {
+        self.column += 1;
+        self.current += 1;
+
         let byte = self.source.as_bytes()
             .get(self.column)
             .copied()
             .unwrap_or(b'\0') as char;
-
-        self.column += 1;
-        self.current += 1;
 
         byte
     }
