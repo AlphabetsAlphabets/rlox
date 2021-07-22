@@ -87,7 +87,7 @@ impl Scanner {
             self.advance();
         }
 
-        if (self.is_at_end()) {
+        if self.is_at_end() {
             let mut lox = Lox::new();
             let message = "Unterminated string.".to_string();
             lox.error(self.line, self.column, message);

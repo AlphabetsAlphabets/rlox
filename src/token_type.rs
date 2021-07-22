@@ -33,7 +33,6 @@ pub enum TokenType {
     LessEqual,
     EqualEqual,
 
-    // Slash,
     Eof,
     Error,
     Newline,
@@ -59,6 +58,8 @@ impl fmt::Display for TokenType {
 
             TokenType::Greater => ">",
             TokenType::Less => "<",
+            TokenType::Slash => "/",
+            TokenType::Whitespace => "whitespace",
 
             TokenType::BangEqual => "!=",
             TokenType::GreaterEqual => ">=",

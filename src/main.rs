@@ -2,7 +2,6 @@
 use std::env;
 use std::fs;
 use std::io::{stdin, stdout, Write};
-use std::path::Path;
 
 mod token_type;
 use token_type::*;
@@ -62,7 +61,8 @@ impl Lox {
     }
 
     fn run(&self, source: String) {
-        // Scanner::new();
+        let mut scanner = Scanner::new(source);
+        scanner.scan_tokens();
     }
 
     fn run_file(&self, path: String) {
