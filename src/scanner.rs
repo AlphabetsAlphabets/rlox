@@ -1,7 +1,3 @@
-// TODO
-// Error handling is weird because it repeats with characters from the first line
-// of the file
-
 use super::token_type::*;
 use super::Lox;
 
@@ -33,9 +29,17 @@ impl Scanner {
             let ch = self.advance();
             let token = self.tokenize(ch);
 
-            if token == TokenType::Error {
-                let message = format!("Unexpected character '{}'", ch);
-                lox.error(self.line, self.column, message);
+            match &token {
+                TokenType::Error(msg) => {
+                    let mut unexpected = b'\0' as char;
+                    if msg == &unexpected.to_string() {
+                        let message = format!("Unexpected character '{}'", ch);
+                        lox.error(self.line, self.column, message);
+                    } else {
+                        lox.error(self.line, self.column, msg.to_string())
+                    }
+                }
+                _ => (),
             }
             self.add_token(token, ch.to_string());
         }
@@ -62,7 +66,7 @@ impl Scanner {
             '\n' => {
                 self.line += 1;
                 TokenType::Newline
-            },
+            }
             '!' => self.lookahead('=', TokenType::BangEqual, TokenType::BangEqual),
 
             '=' => self.lookahead('=', TokenType::EqualEqual, TokenType::Equal),
@@ -81,12 +85,19 @@ impl Scanner {
                 } else {
                     TokenType::Slash
                 }
-            },
+            }
 
             '"' => self.string(),
 
             _ => {
-                TokenType::Error
+                if self.is_digit(ch) {
+                    let num = self.number();
+                    // println!("Num: {}", num);
+                    TokenType::Number(num)
+                } else {
+                    let msg = b'\0' as char;
+                    TokenType::Error(msg.to_string())
+                }
             }
         };
 
@@ -106,13 +117,13 @@ impl Scanner {
 
         if self.is_at_end() {
             let mut lox = Lox::new();
-            let message = "Unterminated string.".to_string();
+            let message = "Unterminated string. You forgot to end the string with a '\"'".to_string();
             lox.error(self.line, self.column, message);
         }
 
         self.advance();
 
-        let string = &self.source[opening_quote .. self.column - 1];
+        let string = &self.source[opening_quote..self.column - 1];
         TokenType::String(string.to_string())
     }
 
@@ -120,18 +131,35 @@ impl Scanner {
         ch >= '0' && ch <= '9'
     }
 
-    fn number(&mut self) {
+    fn number(&mut self) -> isize {
+        let start = self.current;
+
         while self.is_digit(self.peek()) {
-            self.advance();
-        }
-
-        if self.peek() == '.' && self.is_digit(self.peek()) {
-            self.advance();
-
-            while self.is_digit(self.peek()) {
+            if self.peek() == '.' && self.is_digit(self.look_forward_by(2)) {
+                self.advance();
+            } else {
                 self.advance();
             }
         }
+
+        let mut num = &self.source[start - 1..self.current];
+        let num = num
+            .trim()
+            .parse::<isize>()
+            .expect("Unable to convert to isize.");
+
+        num
+    }
+
+    fn look_forward_by(&self, by: usize) -> char {
+        let byte = self
+            .source
+            .as_bytes()
+            .get(self.current + by)
+            .copied()
+            .unwrap_or(b'\0') as char;
+
+        byte
     }
 
     fn is_at_end(&self) -> bool {
@@ -139,7 +167,9 @@ impl Scanner {
     }
 
     fn advance(&mut self) -> char {
-        let byte = self.source.as_bytes()
+        let byte = self
+            .source
+            .as_bytes()
             .get(self.current)
             .copied()
             .unwrap_or(b'\0') as char;
@@ -150,7 +180,8 @@ impl Scanner {
     }
 
     fn peek(&self) -> char {
-        let byte = self.source.as_bytes()
+        let byte = self.source
+            .as_bytes()
             .get(self.current)
             .copied()
             .unwrap_or(b'\0') as char;

@@ -47,7 +47,6 @@ impl Lox {
             // self.check_tokens(scanner);
             input.clear();
             self.had_error = false;
-
         }
     }
 

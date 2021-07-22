@@ -24,7 +24,7 @@ pub enum TokenType {
     Whitespace,
 
     String(String),
-    Number(usize),
+    Number(isize),
     Comment,
 
     // Two-character tokens.
@@ -34,7 +34,7 @@ pub enum TokenType {
     EqualEqual,
 
     Eof,
-    Error,
+    Error(String),
     Newline,
 }
 
@@ -71,9 +71,8 @@ impl fmt::Display for TokenType {
             TokenType::Number(_) => "Number",
 
             TokenType::Eof => "Eof",
-            TokenType::Error => "Error",
+            TokenType::Error(_) => "Error",
             TokenType::Newline => "\\n",
-
         };
 
         write!(f, "{}", text)
