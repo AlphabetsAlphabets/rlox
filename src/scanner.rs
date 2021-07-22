@@ -61,34 +61,14 @@ impl Scanner {
             '*' => TokenType::Star,
             '\n' => {
                 self.line += 1;
-                self.column = 0;
                 TokenType::Newline
             },
-            '!' => self.lookahead('=', TokenType::BangEqual, TokenType::Bang),
+            '!' => self.lookahead('=', TokenType::BangEqual, TokenType::BangEqual),
 
             '=' => self.lookahead('=', TokenType::EqualEqual, TokenType::Equal),
             '>' => self.lookahead('=', TokenType::GreaterEqual, TokenType::Greater),
             '<' => self.lookahead('=', TokenType::LessEqual, TokenType::Less),
-            '/' => {
-                if self.r#match('/') {
-                    while self.peek() != '\n' && !self.is_at_end() {
-                        self.advance();
-                    }
-                    TokenType::Comment
-                } else {
-                    TokenType::Slash
-                }
-            },
-
-            '"' => self.string(),
-
-            ' ' => TokenType::Whitespace,
-            '\r' => TokenType::Whitespace,
-            '\t' => TokenType::Whitespace,
-
             _ => {
-                // if self.is_digit(ch) {
-                // }
                 TokenType::Error
             }
         };
@@ -143,28 +123,26 @@ impl Scanner {
 
     // FIXME: Only keeps track of the first character in the entire file
     fn advance(&mut self) -> char {
+        let current = self.current;
+        let next = self.current + 1;
+
+        let source_code = self.source.as_bytes();
+        let byte = &source_code[current..next];
+
         self.column += 1;
         self.current += 1;
 
-        let byte = self.source.as_bytes()
-            .get(self.column)
-            .copied()
-            .unwrap_or(b'\0') as char;
-
-        byte
+        char::from(byte[0])
     }
 
-    /// Returns the next character
     fn peek(&self) -> char {
-        let byte = self.source.as_bytes()
-            .get(self.column)
-            .copied()
-            .unwrap_or(b'\0') as char;
+        let source_code = self.source.as_bytes();
+        let byte = &source_code[self.current..self.current + 1];
 
-        byte
+        char::from(byte[0])
     }
 
-    /// Checks the next if the next character is equal to `expected`
+    // this is equivalent to `match` in the tutorial
     fn r#match(&mut self, expected: char) -> bool {
         if self.is_at_end() {
             false

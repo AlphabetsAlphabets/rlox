@@ -25,14 +25,15 @@ pub enum TokenType {
 
     String(String),
     Number(usize),
+    Comment,
 
     // Two-character tokens.
-    Comment,
     BangEqual,
     GreaterEqual,
     LessEqual,
     EqualEqual,
 
+    // Slash,
     Eof,
     Error,
     Newline,
@@ -58,8 +59,6 @@ impl fmt::Display for TokenType {
 
             TokenType::Greater => ">",
             TokenType::Less => "<",
-            TokenType::Slash => "/",
-            TokenType::Whitespace => "whitespace",
 
             TokenType::BangEqual => "!=",
             TokenType::GreaterEqual => ">=",
