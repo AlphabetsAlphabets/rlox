@@ -24,7 +24,7 @@ pub enum TokenType {
     Whitespace,
 
     String(String),
-    Number(isize),
+    Number(f64),
     Comment,
 
     // Two-character tokens.
@@ -102,18 +102,13 @@ impl Token {
             line,
         }
     }
-
-    pub fn to_string(&self) -> String {
-        let str = format!("{} {} {}", self.kind, self.lexeme, self.literal);
-        str.to_string()
-    }
 }
 
 impl fmt::Debug for Token {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "TokenKind: {}\nLexeme: {}\nLiteral: {}\nLine: {}",
+            "TokenKind: {}, Lexeme: {}, Literal: {}, Line: {}",
             self.kind, self.lexeme, self.literal, self.line
         )
     }

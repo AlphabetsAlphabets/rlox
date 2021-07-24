@@ -41,10 +41,12 @@ impl Scanner {
                 }
                 _ => (),
             }
-            self.add_token(token, ch.to_string());
+            if ch == '\n' {
+                self.add_token(token, "Newline".to_string());
+            }
         }
 
-        let text = "".to_string();
+        let text = "EOF".to_string();
         let token = Token::new(TokenType::Eof, text.clone(), text, self.line);
         self.tokens.push(token);
     }
@@ -67,11 +69,11 @@ impl Scanner {
                 self.line += 1;
                 TokenType::Newline
             }
-            '!' => self.lookahead('=', TokenType::BangEqual, TokenType::BangEqual),
+            '!' => self.if_contains('=', TokenType::BangEqual, TokenType::Bang),
 
-            '=' => self.lookahead('=', TokenType::EqualEqual, TokenType::Equal),
-            '>' => self.lookahead('=', TokenType::GreaterEqual, TokenType::Greater),
-            '<' => self.lookahead('=', TokenType::LessEqual, TokenType::Less),
+            '=' => self.if_contains('=', TokenType::EqualEqual, TokenType::Equal),
+            '>' => self.if_contains('=', TokenType::GreaterEqual, TokenType::Greater),
+            '<' => self.if_contains('=', TokenType::LessEqual, TokenType::Less),
 
             ' ' => TokenType::Whitespace,
             '\r' => TokenType::Whitespace,
@@ -92,7 +94,6 @@ impl Scanner {
             _ => {
                 if self.is_digit(ch) {
                     let num = self.number();
-                    // println!("Num: {}", num);
                     TokenType::Number(num)
                 } else {
                     let msg = b'\0' as char;
@@ -117,7 +118,8 @@ impl Scanner {
 
         if self.is_at_end() {
             let mut lox = Lox::new();
-            let message = "Unterminated string. You forgot to end the string with a '\"'".to_string();
+            let message =
+                "Unterminated string. You forgot to end the string with a '\"'".to_string();
             lox.error(self.line, self.column, message);
         }
 
@@ -131,24 +133,36 @@ impl Scanner {
         ch >= '0' && ch <= '9'
     }
 
-    fn number(&mut self) -> isize {
+    fn number(&mut self) -> f64 {
         let start = self.current;
 
         while self.is_digit(self.peek()) {
-            if self.peek() == '.' && self.is_digit(self.look_forward_by(2)) {
-                self.advance();
-            } else {
+            self.advance();
+        }
+
+        if self.peek() == '.' && self.is_digit(self.peek_next()) {
+            self.advance();
+
+            while self.is_digit(self.peek()) {
                 self.advance();
             }
         }
 
-        let mut num = &self.source[start - 1..self.current];
+        let num = &self.source[start - 1..self.current];
         let num = num
             .trim()
-            .parse::<isize>()
-            .expect("Unable to convert to isize.");
+            .parse::<f64>()
+            .expect("Unable to convert to f64.");
 
         num
+    }
+
+    fn peek_next(&self) -> char {
+        if self.current + 1 >= self.source.len() {
+            b'\0' as char
+        } else {
+            self.look_forward_by(1)
+        }
     }
 
     fn look_forward_by(&self, by: usize) -> char {
@@ -180,7 +194,8 @@ impl Scanner {
     }
 
     fn peek(&self) -> char {
-        let byte = self.source
+        let byte = self
+            .source
             .as_bytes()
             .get(self.current)
             .copied()
@@ -202,7 +217,7 @@ impl Scanner {
     }
 
     /// if `expected` is the next character returns `v1` else `v2`
-    fn lookahead(&mut self, expected: char, v1: TokenType, v2: TokenType) -> TokenType {
+    fn if_contains(&mut self, expected: char, v1: TokenType, v2: TokenType) -> TokenType {
         if self.r#match(expected) {
             v1
         } else {

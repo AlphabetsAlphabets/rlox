@@ -53,8 +53,8 @@ impl Lox {
     fn check_tokens(&self, scanner: Scanner) {
         for token in scanner.tokens {
             println!("{:?}", token);
-            println!("=========");
         }
+        println!("=======");
     }
 
     fn run(&self, source: String) {
