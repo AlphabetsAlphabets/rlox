@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use super::token_type::*;
 use super::Lox;
 
@@ -90,19 +91,41 @@ impl Scanner {
             }
 
             '"' => self.string(),
+            ch if ch.is_ascii_digit() => {
+                let num = self.number();
+                // println!("Num: {}", num);
+                TokenType::Number(num)
+            },
+            ch if ch.is_ascii_alphabetic() || ch == '_' => {
+                let start = self.current;
+                while self.peek().is_alphanumeric() {
+                    self.advance();
+                }
+
+                let keywords = self.get_reserved_keywords();
+                let text = &self.source[start..self.current];
+                match keywords.get(text) {
+                    Some(keyword) => keyword,
+                    None => TokenType::Identifier,
+                }
+            }
 
             _ => {
-                if self.is_digit(ch) {
-                    let num = self.number();
-                    TokenType::Number(num)
-                } else {
-                    let msg = b'\0' as char;
-                    TokenType::Error(msg.to_string())
-                }
+                let msg = b'\0' as char;
+                TokenType::Error(msg.to_string())
             }
         };
 
         token
+    }
+
+    fn get_reserved_keywords(&self) -> HashMap<String, TokenType> {
+        let mut keywords = HashMap::new();
+        keywords.insert(String::from("and"), TokenType::And);
+        keywords.insert(String::from("class"), TokenType::Class);
+        keywords.insert(String::from("else"), TokenType::Else);
+
+        keywords
     }
 
     fn string(&mut self) -> TokenType {
@@ -112,8 +135,8 @@ impl Scanner {
             self.advance();
         }
 
+        // consume the ending quote if these is one
         self.advance();
-        let string = &self.source[opening_quote..self.current - 1];
 
         let quote = self.source.as_bytes()
             .get(self.current - 1)
@@ -126,6 +149,7 @@ impl Scanner {
             lox.error(self.line, self.column, message);
         }
 
+        let string = &self.source[opening_quote..self.current - 1];
         TokenType::String(string.to_string())
     }
 
@@ -136,11 +160,15 @@ impl Scanner {
     fn number(&mut self) -> f64 {
         let start = self.current;
 
+        // keeps consuming characters until the next character isn't a digit.
         while self.is_digit(self.peek()) {
             self.advance();
         }
 
+        // if the next character from the current position is a dot, and the next
+        // character after the dot is a digit continue
         if self.peek() == '.' && self.is_digit(self.peek_next()) {
+            // consumes the dot
             self.advance();
 
             while self.is_digit(self.peek()) {

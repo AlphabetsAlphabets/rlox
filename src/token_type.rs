@@ -26,12 +26,18 @@ pub enum TokenType {
     String(String),
     Number(f64),
     Comment,
+    Identifier,
 
     // Two-character tokens.
     BangEqual,
     GreaterEqual,
     LessEqual,
     EqualEqual,
+
+    // reserved keywords
+    And,
+    Class,
+    Else,
 
     Eof,
     Error(String),
@@ -69,6 +75,11 @@ impl fmt::Display for TokenType {
             TokenType::Comment => "Comment",
             TokenType::String(_) => "String",
             TokenType::Number(_) => "Number",
+            TokenType::Identifier => "Idenitifer",
+
+            TokenType::And => "And",
+            TokenType::Class => "Class",
+            TokenType::Else => "Else",
 
             TokenType::Eof => "Eof",
             TokenType::Error(_) => "Error",
