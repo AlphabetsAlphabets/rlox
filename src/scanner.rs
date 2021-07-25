@@ -32,7 +32,7 @@ impl Scanner {
 
             match &token {
                 TokenType::Error(msg) => {
-                    let mut unexpected = b'\0' as char;
+                    let unexpected = b'\0' as char;
                     if msg == &unexpected.to_string() {
                         let message = format!("Unexpected character '{}'", ch);
                         lox.error(self.line, self.column, message);
@@ -40,20 +40,22 @@ impl Scanner {
                         lox.error(self.line, self.column, msg.to_string())
                     }
                 }
-                _ => (),
-            }
-            if ch == '\n' {
-                self.add_token(token, "Newline".to_string());
+                _ => {
+                    let text = format!("{}", token);
+                    let token = Token::new(token, text.clone(), text, self.line);
+                    self.tokens.push(token);
+                }
             }
         }
 
+
         let text = "EOF".to_string();
-        let token = Token::new(TokenType::Eof, text.clone(), text, self.line);
-        self.tokens.push(token);
+        let eof_token = Token::new(TokenType::Eof, text.clone(), text, self.line);
+        self.tokens.push(eof_token);
     }
 
     fn tokenize(&mut self, ch: char) -> TokenType {
-        let token = match ch {
+        match ch {
             '(' => TokenType::LeftParen,
             ')' => TokenType::RightParen,
             '{' => TokenType::LeftBrace,
@@ -96,6 +98,7 @@ impl Scanner {
                 // println!("Num: {}", num);
                 TokenType::Number(num)
             },
+
             ch if ch.is_ascii_alphabetic() || ch == '_' => {
                 let start = self.current;
                 while self.peek().is_alphanumeric() {
@@ -103,10 +106,10 @@ impl Scanner {
                 }
 
                 let keywords = self.get_reserved_keywords();
-                let text = &self.source[start..self.current];
+                let text = &self.source[start - 1..self.current];
                 match keywords.get(text) {
-                    Some(keyword) => keyword,
-                    None => TokenType::Identifier,
+                    Some(keyword) => keyword.clone(),
+                    None => TokenType::Identifier
                 }
             }
 
@@ -114,16 +117,15 @@ impl Scanner {
                 let msg = b'\0' as char;
                 TokenType::Error(msg.to_string())
             }
-        };
-
-        token
+        }
     }
 
-    fn get_reserved_keywords(&self) -> HashMap<String, TokenType> {
+    fn get_reserved_keywords<'a>(&self) -> HashMap<&'a str, TokenType> {
         let mut keywords = HashMap::new();
-        keywords.insert(String::from("and"), TokenType::And);
-        keywords.insert(String::from("class"), TokenType::Class);
-        keywords.insert(String::from("else"), TokenType::Else);
+        keywords.insert("var", TokenType::Var);
+        keywords.insert("and", TokenType::And);
+        keywords.insert("else", TokenType::Else);
+        keywords.insert("class", TokenType::Class);
 
         keywords
     }

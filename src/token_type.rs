@@ -1,6 +1,6 @@
 use std::fmt;
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone)]
 pub enum TokenType {
     // Single-character tokens.
     LeftParen,
@@ -35,6 +35,7 @@ pub enum TokenType {
     EqualEqual,
 
     // reserved keywords
+    Var,
     And,
     Class,
     Else,
@@ -77,6 +78,7 @@ impl fmt::Display for TokenType {
             TokenType::Number(_) => "Number",
             TokenType::Identifier => "Idenitifer",
 
+            TokenType::Var => "Var",
             TokenType::And => "And",
             TokenType::Class => "Class",
             TokenType::Else => "Else",
