@@ -109,23 +109,23 @@ impl Scanner {
         let opening_quote = self.column;
 
         while self.peek() != '"' && !self.is_at_end() {
-            if self.peek() == '\n' {
-                self.line += 1;
-            };
-
             self.advance();
         }
 
-        if self.is_at_end() {
+        self.advance();
+        let string = &self.source[opening_quote..self.current - 1];
+
+        let quote = self.source.as_bytes()
+            .get(self.current - 1)
+            .copied()
+            .unwrap_or(b'\0') as char;
+
+        if quote != '"' {
             let mut lox = Lox::new();
-            let message =
-                "Unterminated string. You forgot to end the string with a '\"'".to_string();
+            let message = "Unterminated string. You forgot to end the string with a '\"'".to_string();
             lox.error(self.line, self.column, message);
         }
 
-        self.advance();
-
-        let string = &self.source[opening_quote..self.column - 1];
         TokenType::String(string.to_string())
     }
 
