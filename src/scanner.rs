@@ -48,7 +48,6 @@ impl Scanner {
             }
         }
 
-
         let text = "EOF".to_string();
         let eof_token = Token::new(TokenType::Eof, text.clone(), text, self.line);
         self.tokens.push(eof_token);
@@ -95,7 +94,6 @@ impl Scanner {
             '"' => self.string(),
             ch if ch.is_ascii_digit() => {
                 let num = self.number();
-                // println!("Num: {}", num);
                 TokenType::Number(num)
             },
 

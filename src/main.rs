@@ -1,4 +1,3 @@
-// left off at: https://craftinginterpreters.com/scanning.html#string-literals
 use std::env;
 use std::fs;
 use std::io::{stdin, stdout, Write};
