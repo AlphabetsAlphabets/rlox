@@ -21,7 +21,7 @@
 title: Jia Hong's website
 description: >- # this means to ignore newlines until "baseurl:"
   I'm using this website to write notes about the development process of rlox.
-baseurl: "rlox" # the subpath of your site, e.g. /blog
+baseurl: "/rlox" # the subpath of your site, e.g. /blog
 url: "" # the base hostname & protocol for your site, e.g. http://example.com
 github_username:  YJH16120
 
