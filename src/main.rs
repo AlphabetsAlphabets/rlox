@@ -1,12 +1,16 @@
 use std::env;
 use std::fs;
 use std::io::{stdin, stdout, Write};
+use rand::Rng;
 
 mod token_type;
 use token_type::*;
 
 mod scanner;
 use scanner::Scanner;
+
+mod ast;
+use ast::*;
 
 pub struct Lox {
     had_error: bool,
@@ -71,7 +75,14 @@ impl Lox {
     }
 
     pub fn report(&mut self, line: usize, column: usize, message: String) {
-        let msg = format!("[line {}, column {}] {}", line, column, message);
+        let mut rng = rand::thread_rng();
+        let num = rng.gen_range(1..=256);
+
+        let mut msg = format!("[line {}, column {}] {}", line, column, message);
+        if num == 256 {
+            msg = "There is an error somewhere, good luck.".to_string();
+        } 
+
         self.had_error = true;
         eprintln!("{}", msg);
     }

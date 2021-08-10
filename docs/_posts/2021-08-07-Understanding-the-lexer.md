@@ -1,7 +1,6 @@
 ---
 layout: post
 title:  "Understanding the lexer"
-date:   2021-08-07 14:29:00 +0800
 categories: Notes about source
 ---
 

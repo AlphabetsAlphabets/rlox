@@ -1,7 +1,6 @@
 ---
 layout: post
 title:  "Representing code"
-date:   2021-08-08 12:06:00 +0800
 categories: Notes about source
 ---
 
