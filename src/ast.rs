@@ -1,14 +1,44 @@
 use super::token_type::Token;
 
-struct Binary(Box<Expr>, Token, Box<Expr>);
-struct Unary(Box<Expr>, Token);
-struct Grouping(Box<Expr>);
-struct Literal(Token);
-
-enum Expr {
-    Binary(Box<Expr>, Token, Box<Expr>),
-    Unary(Box<Expr>, Token),
-    Grouping(Box<Expr>),
-    Literal(Token),
+#[derive(Clone)]
+struct Binary {
+    left: Box<Expr>,
+    operation: Token,
+    right: Box<Expr>,
 }
 
+#[derive(Clone)]
+struct Unary {
+    left: Box<Expr>,
+    operation: Token,
+}
+
+#[derive(Clone)]
+struct Grouping {
+    grouping: Box<Expr>,
+}
+
+#[derive(Clone)]
+enum Literal {
+    String(String),
+    Number(f64),
+}
+
+#[derive(Clone)]
+enum Expr {
+    Binary(Binary),
+    Unary(Unary),
+    Grouping(Grouping),
+    Literal(Literal),
+}
+
+trait Visitor<T> {
+    fn visit(&mut self, expr: &Expr) {
+        match expr {
+            Expr::Unary(unary) => todo!(),
+            Expr::Binary(binary) => todo!(),
+            Expr::Literal(literal) => todo!(),
+            Expr::Grouping(grouping) => todo!(),
+        }
+    }
+}

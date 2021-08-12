@@ -1,6 +1,6 @@
-use std::collections::HashMap;
 use super::token_type::*;
 use super::Lox;
+use std::collections::HashMap;
 
 pub struct Scanner {
     source: String,
@@ -95,7 +95,7 @@ impl Scanner {
             ch if ch.is_ascii_digit() => {
                 let num = self.number();
                 TokenType::Number(num)
-            },
+            }
 
             ch if ch.is_ascii_alphabetic() || ch == '_' => {
                 let start = self.current;
@@ -107,7 +107,7 @@ impl Scanner {
                 let text = &self.source[start - 1..self.current];
                 match keywords.get(text) {
                     Some(keyword) => keyword.clone(),
-                    None => TokenType::Identifier
+                    None => TokenType::Identifier,
                 }
             }
 
@@ -138,14 +138,17 @@ impl Scanner {
         // consume the ending quote if these is one
         self.advance();
 
-        let quote = self.source.as_bytes()
+        let quote = self
+            .source
+            .as_bytes()
             .get(self.current - 1)
             .copied()
             .unwrap_or(b'\0') as char;
 
         if quote != '"' {
             let mut lox = Lox::new();
-            let message = "Unterminated string. You forgot to end the string with a '\"'".to_string();
+            let message =
+                "Unterminated string. You forgot to end the string with a '\"'".to_string();
             lox.error(self.line, self.column, message);
         }
 

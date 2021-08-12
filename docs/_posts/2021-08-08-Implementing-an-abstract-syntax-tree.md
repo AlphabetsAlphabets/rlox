@@ -26,18 +26,47 @@ Since `literal`, `unary`, `binary`, and `grouping` fall under expression. Usuall
 
 ```rust
 // in ast.rs
-struct Binary(Box<Expr>, Token, Box<Expr>);
-struct Unary(Box<Expr>, Token);
-struct Grouping(Box<Expr>);
-struct Literal(Token);
+#[derive(Clone)]
+struct Binary {
+    left: Box<Expr>,
+    operation: Token,
+    right: Box<Expr>,
+}
 
+#[derive(Clone)]
+struct Unary {
+    left: Box<Expr>,
+    operation: Token,
+}
+
+#[derive(Clone)]
+struct Grouping {
+    grouping: Box<Expr>,
+}
+
+#[derive(Clone)]
+enum Literal {
+    String(String),
+    Number(f64),
+}
+
+#[derive(Clone)]
 enum Expr {
-    Binary(Box<Expr>, Token, Box<Expr>),
-    Unary(Box<Expr>, Token),
-    Grouping(Box<Expr>),
-    Literal(Token),
+    Binary(Binary),
+    Unary(Unary),
+    Grouping(Grouping),
+    Literal(Literal),
+}
+
+trait Visitor<T> {
+    fn visit(&mut self, expr: &Expr) {
+        match expr {
+            Expr::Unary(unary) => todo!(),
+            Expr::Binary(binary) => todo!(),
+            Expr::Literal(literal) => todo!(),
+            Expr::Grouping(grouping) => todo!(),
+        }
+    }
 }
 ```
-> *If this was done with an OOP language, it would've easily taken over 40 lines to do the samething in Rust.*  
-
-The next step is to perform operations based on the variant. With something called **The Visitor Pattern**. Since the variants are under the same enum, they will share methods. To avoid implementing the same thing 4 times. The Visitor pattern is used.
+After finding a way to differentiate betweent the different expressions, the next step is to process them. *functions for processing aren't made yet.*

@@ -92,6 +92,7 @@ impl fmt::Display for TokenType {
     }
 }
 
+#[derive(Clone)]
 pub struct Token {
     kind: TokenType,
     lexeme: String,

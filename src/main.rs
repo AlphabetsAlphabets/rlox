@@ -1,7 +1,7 @@
+use rand::Rng;
 use std::env;
 use std::fs;
 use std::io::{stdin, stdout, Write};
-use rand::Rng;
 
 mod token_type;
 use token_type::*;
@@ -81,7 +81,7 @@ impl Lox {
         let mut msg = format!("[line {}, column {}] {}", line, column, message);
         if num == 256 {
             msg = "There is an error somewhere, good luck.".to_string();
-        } 
+        }
 
         self.had_error = true;
         eprintln!("{}", msg);
