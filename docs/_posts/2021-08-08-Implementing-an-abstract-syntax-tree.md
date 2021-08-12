@@ -69,4 +69,6 @@ trait Visitor<T> {
     }
 }
 ```
-After finding a way to differentiate betweent the different expressions, the next step is to process them. *functions for processing aren't made yet.*
+After finding a way to differentiate betweent the different expressions, the next step is to process them. For when an expression is passed in, it will be either unary, binary, literal, or grouping. Grouping, binary, and unary can eventually be broken down into literal. Where literal can contain either a `String`, or an `f64`.
+
+The ultimate goal is to return either an `f64` or a `String` all the way up the call stack. To eventually add the literals together to form a valid expression. 
