@@ -94,8 +94,8 @@ impl fmt::Display for TokenType {
 
 pub struct Token {
     kind: TokenType,
-    lexeme: String,
-    pub literal: String,
+    pub lexeme: String,
+    literal: String,
     line: usize,
 }
 
